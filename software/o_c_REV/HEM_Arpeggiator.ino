@@ -337,9 +337,13 @@ public:
         bpm = Unpack(data, PackLocation {0,11}) + 1 ;
         clk_cv_range = Unpack(data, PackLocation {11,3}) ;
         divider = Unpack(data, PackLocation {14,5})-15;
-        arp_range = Unpack(data, PackLocation {19,5}) +2;
-        selected_chord = Unpack(data, PackLocation {24,6}) ;
-        arp_order = Unpack(data, PackLocation {30,2}) ;
+        //SAVING FIX
+        //arp_range = Unpack(data, PackLocation {19,5}) +2;
+        //selected_chord = Unpack(data, PackLocation {24,6}) ;
+        //arp_order = Unpack(data, PackLocation {30,2}) ;
+        arp_range = Unpack(data, PackLocation {19,4}) +2;
+        selected_chord = Unpack(data, PackLocation {23,6}) ;
+        arp_order = Unpack(data, PackLocation {29,2}) ;
     }
 
 protected:
