@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 28
+#define HEMISPHERE_AVAILABLE_APPLETS 30
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
@@ -38,4 +38,6 @@
     DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 11, 0x0c, TrigSeq), \
     DECLARE_APPLET( 25, 0x0c, TrigSeq16), \
+    DECLARE_APPLET( 50, 0x04, BigBen), \
+    DECLARE_APPLET( 51, 0x08, Arpeggiator), \
 }
