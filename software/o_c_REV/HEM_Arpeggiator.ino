@@ -21,8 +21,8 @@
 #define HEM_ARP_CLKCV_LOW 0
 #define HEM_ARP_CLKCV_HIGH 7 
 #define HEM_ARP_RANGE_LOW 2 
-//#define HEM_ARP_RANGE_HIGH 33 // SAVING FIX! 
-#define HEM_ARP_RANGE_HIGH 17 
+#define HEM_ARP_RANGE_HIGH 33 // SAVING FIX! 
+//#define HEM_ARP_RANGE_HIGH 17 
 #define HEM_ARP_ORDER_HIGH 3 
 #define HEM_ARP_DRAW_CLK_CYCLES 40 
 
@@ -315,12 +315,12 @@ public:
         Pack(data, PackLocation {11,3}, clk_cv_range);
         Pack(data, PackLocation {14,5}, divider+15 );
         //SAVING FIX
-        //Pack(data, PackLocation {19,5}, arp_range-2);
-        //Pack(data, PackLocation {24,6}, selected_chord );
-        //Pack(data, PackLocation {30,2}, arp_order );
-        Pack(data, PackLocation {19,4}, arp_range-2);
+        Pack(data, PackLocation {19,5}, arp_range-2);
+        Pack(data, PackLocation {24,6}, selected_chord );
+        Pack(data, PackLocation {30,2}, arp_order );
+        /*Pack(data, PackLocation {19,4}, arp_range-2);
         Pack(data, PackLocation {23,6}, selected_chord );
-        Pack(data, PackLocation {29,2}, arp_order );
+        Pack(data, PackLocation {29,2}, arp_order );*/
         // example: pack property_name at bit 0, with size of 8 bits
         // Pack(data, PackLocation {0,8}, property_name); 
         return data;
@@ -338,12 +338,12 @@ public:
         clk_cv_range = Unpack(data, PackLocation {11,3}) ;
         divider = Unpack(data, PackLocation {14,5})-15;
         //SAVING FIX
-        //arp_range = Unpack(data, PackLocation {19,5}) +2;
-        //selected_chord = Unpack(data, PackLocation {24,6}) ;
-        //arp_order = Unpack(data, PackLocation {30,2}) ;
-        arp_range = Unpack(data, PackLocation {19,4}) +2;
+        arp_range = Unpack(data, PackLocation {19,5}) +2;
+        selected_chord = Unpack(data, PackLocation {24,6}) ;
+        arp_order = Unpack(data, PackLocation {30,2}) ;
+        /*arp_range = Unpack(data, PackLocation {19,4}) +2;
         selected_chord = Unpack(data, PackLocation {23,6}) ;
-        arp_order = Unpack(data, PackLocation {29,2}) ;
+        arp_order = Unpack(data, PackLocation {29,2}) ;*/
     }
 
 protected:
