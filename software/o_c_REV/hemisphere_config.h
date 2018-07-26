@@ -1,19 +1,23 @@
-// Categories:
-// 0x01 = Modulator
-// 0x02 = Sequencer
-// 0x04 = Clocking
+
 // 0x08 = Quantizer
 // 0x10 = Utility
 // 0x20 = MIDI
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 30
+#define HEMISPHERE_AVAILABLE_APPLETS 32
+<<<<<<< HEAD
+=======
+
+//////////////////  id  cat   class name
+>>>>>>> 32a73cfeaae6533d013954ef80899bf93ed75de9
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
+    DECLARE_APPLET( 31, 0x04, Burst), \
     DECLARE_APPLET( 12, 0x10, Calculate),\
+    DECLARE_APPLET( 32, 0x02, Carpeggio), \
     DECLARE_APPLET(  6, 0x04, ClockDivider), \
     DECLARE_APPLET( 28, 0x04, ClockSkip), \
     DECLARE_APPLET( 30, 0x10, Compare), \
@@ -39,5 +43,4 @@
     DECLARE_APPLET( 11, 0x0c, TrigSeq), \
     DECLARE_APPLET( 25, 0x0c, TrigSeq16), \
     DECLARE_APPLET( 50, 0x04, BigBen), \
-    DECLARE_APPLET( 51, 0x08, Arpeggiator), \
-}
+    DECLARE_APPLET( 51, 0x08, Arpeggiator),
