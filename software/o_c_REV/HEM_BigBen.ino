@@ -36,10 +36,10 @@ public:
         divider = 4;
         current_div = divider;
         div_counter = 0;
-        div_cv_range = 4;
+        div_cv_range = 0;
         selected = 0;
-        draw_clock = 0;
-        draw_div = 0;
+        last_clock = 0;
+        last_clock = 0;
         
     }
   /* Run during interrupt service routine, 16667 times per second, every 60us*/
@@ -62,11 +62,11 @@ public:
           if (div_counter >= divider) {
             ClockOut(1);
             div_counter = 0;
-            draw_div = HEM_BEN_DRAW_CLK_CYCLES;      
+            last_div = OC::CORE::ticks;
           }
           next_clock_countdown = 1000000 /current_bpm; // 1.000.000 ticks/min - 60us/tick - bpm
           ClockOut(0);
-          draw_clock = HEM_BEN_DRAW_CLK_CYCLES;
+          last_clock = OC::CORE::ticks;
         }
         next_clock_countdown-=1;
     }
@@ -154,37 +154,28 @@ private:
     uint32_t next_clock_countdown; // Counting down to next clock (for clock multiply)
     uint8_t divider;
     uint8_t div_counter;
-    int draw_clock;
-    int draw_div;
     int selected;
     int clk_cv_range;
     int div_cv_range;
     int current_bpm; // BPM with CV added
     int current_div;
+    uint32_t last_clock;
+    uint32_t last_div;
 
     void DrawSelector() {
         int y = 16 + (selected * 12);
         gfxCursor(0, y + 9, 63);
         gfxPrint(2, 16, current_bpm);
         gfxPrint(" BPM");
+        if (OC::CORE::ticks - last_clock < 1667) gfxBitmap(54, 16, 8, clock_icon);
         gfxPrint(2, 28, "mod: ");
         gfxPrint(clk_cv_range);
         gfxPrint(2, 40, "1/");
         gfxPrint(current_div);
         gfxPrint(" DIV");
+        if (OC::CORE::ticks - last_div < 1667) gfxBitmap(54, 40, 8, clock_icon);
         gfxPrint(2, 52, "mod: ");
         gfxPrint(div_cv_range);   
-        
-        if (draw_clock > 0) {
-          gfxRect(54,16,7,7);
-          draw_clock -= 1;        
-        }
-        else gfxFrame(54,16,7,7);
-        if (draw_div > 0) {
-          gfxRect(54,40,7,7);
-          draw_div -= 1;        
-        }
-        else gfxFrame(54,40,7,7);
     }
 };
 

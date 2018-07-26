@@ -6,7 +6,7 @@
 //   (Arp_range modulation wasn't implemented anyway.)
 // - Added clock multiplication. (Dividing the clock /32 is not very common anyway. If higher values are needed they can be changed in the hem_arp_divisions[] array
 
-
+#include "hem_arp_chord.h"
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
@@ -35,88 +35,6 @@
 #define UP 0
 #define DOWN 1
 
-struct hem_arp_chord {
-  const char* chord_name;
-  const int chord_tones[12];
-  const size_t nr_notes;
-  const int octave_span;
-};
-
-const int Nr_of_arp_chords = 55; // counting from 0....
-
-// 1 b2 2 b3 3 4 b5 5 b6 6 b7  7  8
-// 0  1 2  3 4 5  6 7  8 9 10 11 12
-
-const hem_arp_chord Arp_Chords[] = {
-  //ARPEGGIATE
-  {"Octaves",{0},1,1},
-  {"1 5",{0, 7},2,1},
-  {"Maj triad",{0, 4, 7}, 3,1},
-  {"Maj inv 1",{4, 7, 12}, 3,1},
-  {"Maj inv 2",{7, 12, 16}, 3,1},
-  {"min triad",{0, 3, 7}, 3,1},
-  {"min inv 1",{3, 7, 12}, 3,1},
-  {"min inv 2",{7, 12, 15}, 3,1},
-  {"dim triad",{0, 3, 6},3,1},
-  
-  {"aug triad",{0, 4, 8},3,1},
-  {"sus2",{0,2,7},3,1},
-  {"sus4",{0,5,7},3,1},
-  {"add2",{0,2,4,7},4,1},
-  {"min(add2)",{0,2,3,7},4,1},
-  
-  {"add4",{0,4,5,7},4,1},
-  {"min(add4)",{0,3,5,7},4,1},
-  {"sus4(add2)",{0,2,6,7},4,1},
-  {"1 2 3 4 5",{0,2,4,5,7},5,1},
-  {"1 2 b3 4 5",{0,2,3,5,7},5,1},
-  
-  {"add(#11)",{0,4,6,7},4,1},
-  {"Maj6",{0,4,7,9},4,1},
-  {"min6",{0,3,7,9},4,1},
-  {"Maj7",{0,4,7,11},4,1},
-  {"7",{0,4,7,10},4,1},
-  ////////     20     /////
-  {"7sus2",{0,2,7,10},4,1},
-  {"7sus4",{0,5,7,10},4,1},
-  {"min7",{0,3,7,10},4,1},
-  {"dim7",{0,3,6,8},4,1},
-  {"Maj9",{0,4,7,11,14},5,1},
-
-  {"Maj6/9",{0,4,7,9,14},5,1},
-  {"Maj#11",{0,4,7,11,14,18},6,2},
-  {"9",{0,4,7,10,14},5,1},
-  {"7(b9)",{0,4,7,10,13},5,1},
-  {"7(b9,b13)",{0,4,7,10,13,20},6,2},
-  ////////     30     /////  
-  {"Ionian",{0,2,4,5,7,9,11},7,1},
-  {"Dorian",{0,2,3,5,7,9,10},7,1},
-  {"Phrygian",{0,1,3,5,7,8,10},7,1},
-  {"Lydian",{0,2,4,6,7,9,11},7,1},
-  {"Mixolydian",{0,2,4,5,7,9,10},7,1},
-
-  {"Aeolian",{0,2,3,5,7,8,10},7,1},
-  {"Locrian",{0,1,3,5,6,8,10},7,1},
-  {"Harm Min",{0,2,3,5,7,8,11},7,1},
-  {"Mel Min",{0,2,3,5,7,9,11},7,1},
-  {"Penta",{0,2,4,7,9},5,1},
-  //////////    40 ////////
-  {"min Penta",{0,3,5,7,10},5,1},
-  {"Maj Blues",{0,2,3,4,7,9},6,1},
-  {"min Blues",{0,3,5,6,7,10},6,1},
-  {"Bebop",{0,2,4,5,7,9,10,11},8,1},
-  {"WholeTone",{0,2,4,6,8,10},6,1},
-  
-  {"Dim 1 1/2",{0,2,3,5,6,8,9,11},8,1},
-  {"Dim 1/2 1",{0,2,3,5,6,8,9,11},8,1},
-  {"Altered",{0,1,3,4,6,8,10},7,1},
-  {"Chromatic",{0,1,2,3,4,5,6,7,8,9,10,11},12,1},
-  {"All Fourth", {0,5,10,15,20,26,31},7,3},
-  //////////    50 ////////
-  {"All Fifths", {0,7,14,21,28,35,41},7,4},
-  {"Corny Pop", {12,11,12,7,3,7,0,0},8,1}
-};
-
 
 const int hem_arp_cvmods[8] = {0,2,4,8,16,24,32,64};
 const char* hem_arp_order_names[] = {"up     ","down   ","updown ","random "};
@@ -138,7 +56,7 @@ public:
         current_bpm = bpm;
         divider = 1;
         current_div = hem_arp_divisions[divider];
-        clk_cv_range = 4;
+        clk_cv_range = 0;
         selected = 0;
         note_nr_in_arp = 0;
         selected_chord = 2;
@@ -148,7 +66,7 @@ public:
         updown_direction = 0;
         last_clock = OC::CORE::ticks;
         next_clock = last_clock;
-        tick_at_last_note = last_clock; 
+        tick_at_last_note = 0; 
         cycle_time = 0;
         
         quantizer.Init();
@@ -192,7 +110,6 @@ public:
                 next_note_countdown = current_div;
                 PlayNextNote();
                 ClockOut(1);
-                draw_clock = HEM_ARP_DRAW_CLK_CYCLES;    
               }
               next_note_countdown-=1;
             }
@@ -205,7 +122,6 @@ public:
               if (int(this_tick-tick_at_last_note)>clock_every/4) {
                 PlayNextNote();
                 ClockOut(1);
-                draw_clock = HEM_ARP_DRAW_CLK_CYCLES;  
               }
               
               last_clock = this_tick;
@@ -219,8 +135,7 @@ public:
               if (next_note_countdown == 0) {
                 next_note_countdown = 1000000 /current_bpm; // 1.000.000 ticks/min - 60us/tick - bpm
                 PlayNextNote();
-                ClockOut(1);
-                draw_clock = HEM_ARP_DRAW_CLK_CYCLES;    
+                ClockOut(1);  
               }
               next_note_countdown-=1;
             }
@@ -232,14 +147,8 @@ public:
                   next_clock += clock_every;
                   PlayNextNote();
                   ClockOut(1);
-                  draw_clock = HEM_ARP_DRAW_CLK_CYCLES;
-                  tick_at_last_note = this_tick;    
                 }
               }
-                    
-        
-
-        
         // output note
         int32_t outputter = In(0)+quantizer.Lookup(current_note + 48);
         // Not really sure how to constrain here and if needed.
@@ -362,7 +271,7 @@ private:
     uint16_t bpm; // Amount of clocks per minute
     uint32_t next_note_countdown; // Tick number for the next output (for clock multiply)
     int selected;
-    int draw_clock;
+    //int draw_clock;
     int clk_cv_range;
     int current_bpm; // BPM with CV added
     int divider;
@@ -408,21 +317,23 @@ private:
           gfxPrint(2, 16, current_bpm);
           gfxPrint(" BPM");
         }
+        if (OC::CORE::ticks - tick_at_last_note < 1667) gfxBitmap(54, 16, 8, clock_icon);
         gfxPrint(2, 28, "mod ");
         gfxPrint(hem_arp_cvmods[clk_cv_range]);
         gfxPrint(2, 40, Arp_Chords[selected_chord].chord_name);
         gfxPrint(2, 52, hem_arp_order_names[arp_order]);
         gfxPrint(arp_range);   
         
-        if (draw_clock > 0) {
+        /*if (draw_clock > 0) {
           gfxRect(54,16,7,7);
           draw_clock -= 1;        
         }
-        else gfxFrame(54,16,7,7);
+        else gfxFrame(54,16,7,7);*/
     }
 
     void PlayNextNote() {
       // UP
+      tick_at_last_note = OC::CORE::ticks;
       switch (arp_order) 
       {
         case 0: // UP
@@ -448,7 +359,7 @@ private:
           GetNote();
           break;
       }
-
+  
     }
     void GetNote() {
       // Find the chord tone + add octaves if there more notes! 
