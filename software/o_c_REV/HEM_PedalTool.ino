@@ -57,7 +57,7 @@ public:
           if (!Ch_GateInv) Ch_CurrentGateLength = Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
           else Ch_CurrentGateLength = -Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
           Ch_CurrentGateLength = constrain(Ch_CurrentGateLength, 1, HEM_PEDALTOOL_LENGTH_HIGH);
-          Ch_CurrentGateLength = Ch_CurrentGateLength * 1000 /60; // Convert to ticks!!
+          Ch_CurrentGateLength = Ch_CurrentGateLength * 100 /6; // Convert to ticks!!
 
           // Check if gate time has passed
           if (Ch_GateTicks>=Ch_CurrentGateLength) {
@@ -121,7 +121,7 @@ public:
         Ch_GateLengthMenu = constrain(Ch_GateLengthMenu, -HEM_PEDALTOOL_LENGTH_HIGH, HEM_PEDALTOOL_LENGTH_HIGH);
         if (Ch_GateLengthMenu == 0) {
           Ch_GateLengthMenu -= lastValue; // substract last value to go one step further and skip 0!
-          Ch_GateInv =!Ch_GateInv;
+          Ch_GateInv = !Ch_GateInv;
           GateOut(0, Ch_GateInv);            
           gate[0] = Ch_GateInv;
         }
@@ -181,14 +181,15 @@ private:
         {0x22, 0x22, 0x77, 0x08, 0x77, 0x7f, 0x3e, 0x1c, 0x1c, 0x08, 0x0a, 0x0c}  // XNOR*/
     
     void DrawSelector() {
-
         gfxCursor(0, 23, 63);
-  
-        gfxPrint(1, 15, Ch_GateLengthMenu);
-        gfxPrint("ms");
-        gfxBitmap(40, 15, 12, NOT_bitmap);
         if (OC::CORE::ticks - last_trigger < 1667) gfxBitmap(54, 15, 8, clock_icon);
-        if (Ch_GateInv) gfxBitmap(40, 15, 12, NOT_bitmap);
+
+        if (Ch_GateInv) {
+          gfxBitmap(40, 15, 12, NOT_bitmap);
+          gfxPrint(1, 15, -Ch_GateLengthMenu);
+        }
+        else gfxPrint(1, 15, Ch_GateLengthMenu);
+        gfxPrint("ms");
         gfxPrint(1, 40, "Ch2:");
         gfxBitmap(33, 40, 12, NOT_bitmap);
         

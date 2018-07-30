@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 34
+#define HEMISPHERE_AVAILABLE_APPLETS 35
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \

@@ -57,7 +57,7 @@ public:
           if (!Ch_GateInv[ch]) Ch_CurrentGateLength[ch] = Ch_GateLengthMenu[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
           else Ch_CurrentGateLength[ch] = -Ch_GateLengthMenu[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
           Ch_CurrentGateLength[ch] = constrain(Ch_CurrentGateLength[ch], 1, HEM_T2G_LENGTH_HIGH);
-          Ch_CurrentGateLength[ch] = Ch_CurrentGateLength[ch] * 1000 /60; // Convert to ticks!!
+          Ch_CurrentGateLength[ch] = Ch_CurrentGateLength[ch] * 100 /6; // Convert to ticks!!
           
           // Check if gate time has passed
           if (Ch_GateTicks[ch]>=Ch_CurrentGateLength[ch]) {
@@ -179,10 +179,14 @@ private:
         {
           int y = 15 + (ch * 25);
           if (ch == cursor) gfxCursor(0, y + 8, 63);
-    
-          gfxPrint(1, y, Ch_GateLengthMenu[ch]);
+ 
+          if (Ch_GateInv[ch]) {
+            gfxBitmap(40, y, 12, NOT_bitmap);
+            gfxPrint(1, y, -Ch_GateLengthMenu[ch]);
+          }
+          else gfxPrint(1, y, Ch_GateLengthMenu[ch]);
           gfxPrint("ms");
-          if (Ch_GateInv[ch]) gfxBitmap(40, y, 12, NOT_bitmap);
+          
           if (OC::CORE::ticks - last_trigger[ch] < 1667) gfxBitmap(54, y, 8, clock_icon);
 
           // Scope code

@@ -122,15 +122,15 @@ private:
       }
       else
       {
-        uint32_t showtime = ticks *60/1000; // Convert to ms
+        uint64_t showtime = ticks*6/100; // Convert to ms
         // Draw time in ChronoCounter       
         int GetCentiSeconds = showtime / 10; // Total time in 1/100th seconds
         int GetSeconds = GetCentiSeconds / 100; // Tital time in seconds
         GetCentiSeconds = GetCentiSeconds % 100; // Get full seconds out
         int GetMinutes = GetSeconds / 60;
         GetSeconds = GetSeconds % 60;
-        int GetHours = GetMinutes /60;
-        GetMinutes = GetMinutes %60;
+        int GetHours = GetMinutes / 60;
+        GetMinutes = GetMinutes % 60;
         
         
         gfxPrint(1,y,GetHours);
