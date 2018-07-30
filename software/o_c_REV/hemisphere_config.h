@@ -42,10 +42,9 @@
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 18, 0x02, TM), \
-    DECLARE_APPLET( 11, 0x0c, TrigSeq), \
-    DECLARE_APPLET( 25, 0x0c, TrigSeq16), \
     DECLARE_APPLET( 50, 0x04, BigBen), \
     DECLARE_APPLET( 51, 0x08, Arpeggiator),\
     DECLARE_APPLET( 52, 0x04, Trig2Gate), \
-    DECLARE_APPLET( 53, 0x04, PedalTool), \
+    DECLARE_APPLET( 53, 0x80, Chrono), \
+    DECLARE_APPLET( 54, 0x80, PedalTool), \
 }
