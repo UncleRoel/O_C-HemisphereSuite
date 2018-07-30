@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 33
+#define HEMISPHERE_AVAILABLE_APPLETS 34
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -45,4 +45,5 @@
     DECLARE_APPLET( 50, 0x04, BigBen), \
     DECLARE_APPLET( 51, 0x08, Arpeggiator),\
     DECLARE_APPLET( 52, 0x04, Trig2Gate), \
+    DECLARE_APPLET( 53, 0x04, PedalTool), \
 }

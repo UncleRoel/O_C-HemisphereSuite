@@ -1,8 +1,12 @@
-// Roel's MasterClock for Hemisphere
+// Trigger to gate convertor
+// applet for Hemisphere by Roel Das
+
+// Added inverted signal
+
 
 // Max and min gate lengths in ms
-#define HEM_T2G_LENGTH_HIGH 10000
-#define HEM_T2G_LENGTH_LOW 2
+#define HEM_T2G_LENGTH_HIGH 9990
+#define HEM_T2G_LENGTH_LOW -9990
 // Max mod ranges
 #define HEM_T2G_CV_RANGE 2000
 // number of display refresh cycles to display clock-output
@@ -27,7 +31,8 @@ public:
           //initialise channels
           Ch_GateTicks[ch]=-1; // Ticks the gate has been high. -1 means gate is low.
           last_trigger[ch]=0;
-          Ch_GateLength[ch] = 1000;        
+          Ch_GateLengthMenu[ch] = 1000;
+          Ch_GateLengthMenu[ch] = 1000;             
         }
         cursor = 0;
         
@@ -37,14 +42,24 @@ public:
         // Handle trigger ins
         ForEachChannel(ch)
         {
+          // Inverted?
+          if (Ch_GateLengthMenu[ch] <0) {
+            Ch_GateInv[ch]=1;
+            Ch_GateLength[ch] = -Ch_GateLengthMenu[ch];
+          }
+          else {
+            Ch_GateInv[ch]=0;
+            Ch_GateLength[ch] = Ch_GateLengthMenu[ch];
+          }
+          
           if (Clock(ch)) {
             // handle clock: start counting ticks + set output 
             Ch_GateTicks[ch]=0;
-            GateOut(ch, 1);            
-            gate[ch]=1;
+            GateOut(ch, !Ch_GateInv[ch]);            
+            gate[ch]=!Ch_GateInv[ch];
             last_trigger[ch] = OC::CORE::ticks;
           }
-          
+
           // Take CVs modulation into account
           //  ticks = length(ms) *1000 us /60 ticks/us
           Ch_CurrentGateLength[ch] = Ch_GateLength[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
@@ -55,24 +70,23 @@ public:
           if (Ch_GateTicks[ch]>=Ch_CurrentGateLength[ch]) {
             // Reset gate
             Ch_GateTicks[ch]=-1;
-            GateOut(ch, 0);
-            gate[ch]=0;
+            GateOut(ch, Ch_GateInv[ch]);
+            gate[ch]=Ch_GateInv[ch];
           }
           
           // While gate is high, increase ticks! and output high gate! (No gate means -1!!)
           if (Ch_GateTicks[ch]>=0) {
             Ch_GateTicks[ch]++;    
           }
-
-          // Scope_code
-          if (--sample_countdown <1)
-          {
-            sample_countdown = SAMPLE_COUNT;
-            if (++sample_num > 63) sample_num = 0;
-            scope[ch][sample_num] = gate[ch];
-          }
         }
-
+        // Scope_code
+        if (--sample_countdown <1)
+        {
+          sample_countdown = SAMPLE_COUNT;
+          if (++sample_num > 63) sample_num = 0;
+          scope[0][sample_num] = gate[0];
+          scope[1][sample_num] = gate[1];
+        }
     }
   /* Draw the screen */
     void View() {
@@ -97,12 +111,20 @@ public:
    */
     void OnEncoderMove(int direction) {
       if (cursor == SEL_T2G_LENGTH_1) {
-        Ch_GateLength[0] += direction;
-        Ch_GateLength[0] = constrain(Ch_GateLength[0], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        int lastValue = Ch_GateLengthMenu[0];
+        Ch_GateLengthMenu[0] += direction * 10;
+        Ch_GateLengthMenu[0] = constrain(Ch_GateLengthMenu[0], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        if (Ch_GateLengthMenu[0] == 0) {
+          Ch_GateLengthMenu[0] -= lastValue; // substract last value to go one step further and skip 0!
+        }
       }
       if (cursor == SEL_T2G_LENGTH_2) {
-        Ch_GateLength[1] += direction;
-        Ch_GateLength[1] = constrain(Ch_GateLength[1], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        int lastValue = Ch_GateLengthMenu[1];
+        Ch_GateLengthMenu[1] += direction * 10;
+        Ch_GateLengthMenu[1] = constrain(Ch_GateLengthMenu[1], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        if (Ch_GateLengthMenu[1] == 0) {
+          Ch_GateLengthMenu[1] -= lastValue; // substract last value to go one step further and skip 0!
+        }
       } 
       
     }
@@ -113,8 +135,8 @@ public:
      */
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,16}, Ch_GateLength[0]); // 10 bits for bpm, range = 1024
-        Pack(data, PackLocation {16,16}, Ch_GateLength[1]);
+        Pack(data, PackLocation {0,16}, Ch_GateLengthMenu[0]); // 10 bits for bpm, range = 1024
+        Pack(data, PackLocation {16,16}, Ch_GateLengthMenu[1]);
         return data;
     }
 
@@ -124,8 +146,8 @@ public:
      * properties.
      */
     void OnDataReceive(uint32_t data) {
-        Ch_GateLength[0] = Unpack(data, PackLocation {0,16}); 
-        Ch_GateLength[1] = Unpack(data, PackLocation {16,16});
+        Ch_GateLengthMenu[0] = Unpack(data, PackLocation {0,16}); 
+        Ch_GateLengthMenu[1] = Unpack(data, PackLocation {16,16});
     }
 
 protected:
@@ -141,8 +163,10 @@ protected:
     
 private:
     int32_t Ch_GateTicks[2]; // Gate is high as long as there are ticks remaining.
+    int Ch_GateLengthMenu[2]; // Length of gate as set by user, in ms (Negative = inverted out!)
     int Ch_GateLength[2]; // Length of gate as set by user, in ms
     int Ch_CurrentGateLength[2]; // Length of gate after CV mod
+    boolean Ch_GateInv[2];
     uint32_t last_trigger[2];
     int cursor; // Cursor 
     boolean scope[2][64];
@@ -150,6 +174,7 @@ private:
     int scope_sample_nr;
     int sample_countdown;
     int sample_num;
+    const uint8_t NOT_bitmap[12] = { 0x08, 0x08, 0x08, 0x7f, 0x7f, 0x3e, 0x1c, 0x1c, 0x08, 0x0a, 0x0c}; // NOT
     
     void DrawSelector() {
         ForEachChannel(ch)
@@ -159,24 +184,25 @@ private:
     
           gfxPrint(1, y, Ch_GateLength[ch]);
           gfxPrint("ms");
-          
+          if (Ch_GateInv[ch]) gfxBitmap(40, y, 12, NOT_bitmap);
           if (OC::CORE::ticks - last_trigger[ch] < 1667) gfxBitmap(54, y, 8, clock_icon);
 
           // Scope code
           for (int s = 0; s <64; s++)
           {
             int x = s + sample_num;
+            int s_draw = 63-s;
             if (x>63) x-=64;
             if (scope[ch][x]!= scope[ch][(x+1)%63]) {
               // Draw line!
-              gfxPixel(s, y+13);
-              gfxPixel(s, y+14);
-              gfxPixel(s, y+15);
-              gfxPixel(s, y+16);
-              gfxPixel(s, y+17);
-              gfxPixel(s, y+18);
+              gfxPixel(s_draw, y+13);
+              gfxPixel(s_draw, y+14);
+              gfxPixel(s_draw, y+15);
+              gfxPixel(s_draw, y+16);
+              gfxPixel(s_draw, y+17);
+              gfxPixel(s_draw, y+18);
             }
-            gfxPixel(s, y+18-(scope[ch][x]*5));    
+            gfxPixel(s_draw, y+18-(scope[ch][x]*5));    
           }
         }
     }
