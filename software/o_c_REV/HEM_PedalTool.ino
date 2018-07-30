@@ -6,7 +6,6 @@
 
 // Max and min gate lengths in ms
 #define HEM_PEDALTOOL_LENGTH_HIGH 9990
-#define HEM_PEDALTOOL_LENGTH_LOW 10
 // Max mod ranges
 #define HEM_PEDALTOOL_CV_RANGE 2000
 // number of display refresh cycles to display clock-output
@@ -31,7 +30,7 @@ public:
           //initialise channels
           Ch_GateTicks=-1; // Ticks the gate has been high. -1 means gate is low.
           last_trigger=0;
-          Ch_GateLength = 1000;        
+          Ch_GateLengthMenu = 1000;        
         //}
         cursor = 0;
         
@@ -41,26 +40,31 @@ public:
         // Handle trigger ins
         //ForEachChannel(ch)
         //{
+          // inverted?
+          if (Ch_GateLengthMenu <0) Ch_GateInv=1;
+          else Ch_GateInv=0;
+
           if (Clock(0)) {
             // handle clock: start counting ticks + set output 
             Ch_GateTicks=0;
-            GateOut(0, 0);            
-            gate[0]=0;
+            GateOut(0, !Ch_GateInv);            
+            gate[0]=!Ch_GateInv;
             last_trigger = OC::CORE::ticks;
           }
           
           // Take CVs modulation into account
           //  ticks = length(ms) *1000 us /60 ticks/us
-          Ch_CurrentGateLength = Ch_GateLength + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
-          Ch_CurrentGateLength = constrain(Ch_CurrentGateLength, HEM_PEDALTOOL_LENGTH_LOW, HEM_PEDALTOOL_LENGTH_HIGH);
+          if (!Ch_GateInv) Ch_CurrentGateLength = Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
+          else Ch_CurrentGateLength = -Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
+          Ch_CurrentGateLength = constrain(Ch_CurrentGateLength, 1, HEM_PEDALTOOL_LENGTH_HIGH);
           Ch_CurrentGateLength = Ch_CurrentGateLength * 1000 /60; // Convert to ticks!!
 
           // Check if gate time has passed
           if (Ch_GateTicks>=Ch_CurrentGateLength) {
             // Reset gate
             Ch_GateTicks=-1;
-            GateOut(0, 1);
-            gate[0]=1;
+            GateOut(0, Ch_GateInv);
+            gate[0]= Ch_GateInv;
           }
           
           // While gate is high, increase ticks! and output high gate! (No gate means -1!!)
@@ -112,14 +116,15 @@ public:
    */
     void OnEncoderMove(int direction) {
       //if (cursor == SEL_T2G_LENGTH_1) {
-        Ch_GateLength += (direction*10);
-        Ch_GateLength = constrain(Ch_GateLength, HEM_PEDALTOOL_LENGTH_LOW, HEM_PEDALTOOL_LENGTH_HIGH);
-      //}
-      //if (cursor == SEL_T2G_LENGTH_2) {
-        //Ch_GateLength[1] += direction;
-        //Ch_GateLength[1] = constrain(Ch_GateLength[1], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
-      //} 
-      
+        int lastValue = Ch_GateLengthMenu;
+        Ch_GateLengthMenu += (direction*10);
+        Ch_GateLengthMenu = constrain(Ch_GateLengthMenu, -HEM_PEDALTOOL_LENGTH_HIGH, HEM_PEDALTOOL_LENGTH_HIGH);
+        if (Ch_GateLengthMenu == 0) {
+          Ch_GateLengthMenu -= lastValue; // substract last value to go one step further and skip 0!
+          Ch_GateInv =!Ch_GateInv;
+          GateOut(0, Ch_GateInv);            
+          gate[0] = Ch_GateInv;
+        }
     }
         
     /* Each applet may save up to 32 bits of data. When data is requested from
@@ -128,7 +133,7 @@ public:
      */
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,16}, Ch_GateLength); // 10 bits for bpm, range = 1024
+        Pack(data, PackLocation {0,16}, Ch_GateLengthMenu); // 10 bits for bpm, range = 1024
         //Pack(data, PackLocation {16,16}, Ch_GateLength[1]);
         return data;
     }
@@ -139,7 +144,7 @@ public:
      * properties.
      */
     void OnDataReceive(uint32_t data) {
-        Ch_GateLength = Unpack(data, PackLocation {0,16}); 
+        Ch_GateLengthMenu = Unpack(data, PackLocation {0,16}); 
         //Ch_GateLength[1] = Unpack(data, PackLocation {16,16});
     }
 
@@ -156,12 +161,13 @@ protected:
     
 private:
     int32_t Ch_GateTicks; // Gate is high as long as there are ticks remaining.
-    int Ch_GateLength; // Length of gate as set by user, in ms
+    int16_t Ch_GateLengthMenu; // Length of gate as set by user, in ms
+    boolean Ch_GateInv;
     int Ch_CurrentGateLength; // Length of gate after CV mod
     uint32_t last_trigger;
     int cursor; // Cursor 
     boolean scope[2][64];
-    int gate[2];
+    boolean gate[2];
     int scope_sample_nr;
     int sample_countdown;
     int sample_num;
@@ -178,11 +184,11 @@ private:
 
         gfxCursor(0, 23, 63);
   
-        gfxPrint(1, 15, Ch_GateLength);
+        gfxPrint(1, 15, Ch_GateLengthMenu);
         gfxPrint("ms");
         gfxBitmap(40, 15, 12, NOT_bitmap);
         if (OC::CORE::ticks - last_trigger < 1667) gfxBitmap(54, 15, 8, clock_icon);
-        
+        if (Ch_GateInv) gfxBitmap(40, 15, 12, NOT_bitmap);
         gfxPrint(1, 40, "Ch2:");
         gfxBitmap(33, 40, 12, NOT_bitmap);
         

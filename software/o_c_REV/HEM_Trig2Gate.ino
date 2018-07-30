@@ -6,7 +6,6 @@
 
 // Max and min gate lengths in ms
 #define HEM_T2G_LENGTH_HIGH 9990
-#define HEM_T2G_LENGTH_LOW -9990
 // Max mod ranges
 #define HEM_T2G_CV_RANGE 2000
 // number of display refresh cycles to display clock-output
@@ -31,8 +30,7 @@ public:
           //initialise channels
           Ch_GateTicks[ch]=-1; // Ticks the gate has been high. -1 means gate is low.
           last_trigger[ch]=0;
-          Ch_GateLengthMenu[ch] = 1000;
-          Ch_GateLengthMenu[ch] = 1000;             
+          Ch_GateLengthMenu[ch] = 1000;         
         }
         cursor = 0;
         
@@ -43,14 +41,8 @@ public:
         ForEachChannel(ch)
         {
           // Inverted?
-          if (Ch_GateLengthMenu[ch] <0) {
-            Ch_GateInv[ch]=1;
-            Ch_GateLength[ch] = -Ch_GateLengthMenu[ch];
-          }
-          else {
-            Ch_GateInv[ch]=0;
-            Ch_GateLength[ch] = Ch_GateLengthMenu[ch];
-          }
+          if (Ch_GateLengthMenu[ch] <0) Ch_GateInv[ch]=1;
+          else Ch_GateInv[ch]=0;
           
           if (Clock(ch)) {
             // handle clock: start counting ticks + set output 
@@ -62,10 +54,11 @@ public:
 
           // Take CVs modulation into account
           //  ticks = length(ms) *1000 us /60 ticks/us
-          Ch_CurrentGateLength[ch] = Ch_GateLength[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
-          Ch_CurrentGateLength[ch] = constrain(Ch_CurrentGateLength[ch], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+          if (!Ch_GateInv[ch]) Ch_CurrentGateLength[ch] = Ch_GateLengthMenu[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
+          else Ch_CurrentGateLength[ch] = -Ch_GateLengthMenu[ch] + Proportion(In(ch),HEMISPHERE_MAX_CV,HEM_T2G_CV_RANGE);
+          Ch_CurrentGateLength[ch] = constrain(Ch_CurrentGateLength[ch], 1, HEM_T2G_LENGTH_HIGH);
           Ch_CurrentGateLength[ch] = Ch_CurrentGateLength[ch] * 1000 /60; // Convert to ticks!!
-
+          
           // Check if gate time has passed
           if (Ch_GateTicks[ch]>=Ch_CurrentGateLength[ch]) {
             // Reset gate
@@ -113,17 +106,23 @@ public:
       if (cursor == SEL_T2G_LENGTH_1) {
         int lastValue = Ch_GateLengthMenu[0];
         Ch_GateLengthMenu[0] += direction * 10;
-        Ch_GateLengthMenu[0] = constrain(Ch_GateLengthMenu[0], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        Ch_GateLengthMenu[0] = constrain(Ch_GateLengthMenu[0], -HEM_T2G_LENGTH_HIGH, HEM_T2G_LENGTH_HIGH);
         if (Ch_GateLengthMenu[0] == 0) {
           Ch_GateLengthMenu[0] -= lastValue; // substract last value to go one step further and skip 0!
+          Ch_GateInv[0] =!Ch_GateInv[0];
+          GateOut(0, Ch_GateInv[0]);            
+          gate[0]= Ch_GateInv[0];
         }
       }
       if (cursor == SEL_T2G_LENGTH_2) {
         int lastValue = Ch_GateLengthMenu[1];
         Ch_GateLengthMenu[1] += direction * 10;
-        Ch_GateLengthMenu[1] = constrain(Ch_GateLengthMenu[1], HEM_T2G_LENGTH_LOW, HEM_T2G_LENGTH_HIGH);
+        Ch_GateLengthMenu[1] = constrain(Ch_GateLengthMenu[1], -HEM_T2G_LENGTH_HIGH, HEM_T2G_LENGTH_HIGH);
         if (Ch_GateLengthMenu[1] == 0) {
           Ch_GateLengthMenu[1] -= lastValue; // substract last value to go one step further and skip 0!
+          Ch_GateInv[1] =!Ch_GateInv[1];
+          GateOut(1, Ch_GateInv[1]);            
+          gate[1]= Ch_GateInv[1];
         }
       } 
       
@@ -163,14 +162,13 @@ protected:
     
 private:
     int32_t Ch_GateTicks[2]; // Gate is high as long as there are ticks remaining.
-    int Ch_GateLengthMenu[2]; // Length of gate as set by user, in ms (Negative = inverted out!)
-    int Ch_GateLength[2]; // Length of gate as set by user, in ms
+    int16_t Ch_GateLengthMenu[2]; // Length of gate as set by user, in ms (Negative = inverted out!)
     int Ch_CurrentGateLength[2]; // Length of gate after CV mod
     boolean Ch_GateInv[2];
     uint32_t last_trigger[2];
     int cursor; // Cursor 
     boolean scope[2][64];
-    int gate[2];
+    boolean gate[2];
     int scope_sample_nr;
     int sample_countdown;
     int sample_num;
@@ -182,7 +180,7 @@ private:
           int y = 15 + (ch * 25);
           if (ch == cursor) gfxCursor(0, y + 8, 63);
     
-          gfxPrint(1, y, Ch_GateLength[ch]);
+          gfxPrint(1, y, Ch_GateLengthMenu[ch]);
           gfxPrint("ms");
           if (Ch_GateInv[ch]) gfxBitmap(40, y, 12, NOT_bitmap);
           if (OC::CORE::ticks - last_trigger[ch] < 1667) gfxBitmap(54, y, 8, clock_icon);
