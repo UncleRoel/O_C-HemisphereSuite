@@ -29,18 +29,19 @@ public:
             // simply play current step and advance it. This way, the applet can be used as
             // a more conventional arpeggiator as well as a Cartesian one.
             if (DetentedIn(0) || DetentedIn(1)) {
-                int x = ProportionCV(In(0), 3);
-                int y = ProportionCV(In(1), 3);
+                int x = ProportionCV(In(0), 4);
+                int y = ProportionCV(In(1), 4);
+                if (x > 3) x = 3;
+                if (y > 3) y = 3;
                 step = (y * 4) + x;
+                pitch_out_for_step();
+            } else {
+                pitch_out_for_step();
+                if (++step > 15) step = 0;
             }
-            int note = sequence[step] + 48 + transpose;
-            Out(0, quantizer.Lookup(constrain(note, 0, 126)));
-            if (++step > 15) step = 0;
-        }
-
-        if (replay) {
-            int note = sequence[step] + 48 + transpose;
-            Out(0, quantizer.Lookup(constrain(note, 0, 126)));
+            replay = 0;
+        } else if (replay) {
+            pitch_out_for_step();
             replay = 0;
         }
 
@@ -64,18 +65,19 @@ public:
 
     void OnButtonPress() {
         // Set a chord imprint if a new chord is picked
-        if (cursor == 1 && chord != sel_chord) ImprintChord(chord);
+        if (cursor == 1 && chord != sel_chord) {
+            cursor = 0; // Don't advance cursor when chord is changed
+            ImprintChord(chord);
+        }
         if (++cursor > 2) cursor = 0;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 0) {
-            sequence[step] = constrain(sequence[step] += direction, 0, 60);
-            replay = 1;
-        }
+        if (cursor == 0) sequence[step] = constrain(sequence[step] += direction, 0, 60);
         if (cursor == 1) chord = constrain(chord += direction, 0, Nr_of_arp_chords - 1);
         if (cursor == 2) transpose = constrain(transpose += direction, -24, 24);
+        if (cursor != 1) replay = 1;
     }
         
     uint32_t OnDataRequest() {
@@ -182,6 +184,11 @@ private:
         chord = new_chord;
         confirm_animation_position = 16;
         confirm_animation_countdown = HEM_CARPEGGIO_ANIMATION_SPEED;
+    }
+
+    void pitch_out_for_step() {
+        int note = sequence[step] + 48 + transpose;
+        Out(0, quantizer.Lookup(constrain(note, 0, 126)));
     }
 };
 

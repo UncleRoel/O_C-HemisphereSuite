@@ -32,7 +32,7 @@ public:
         next_clock_countdown = 0;
         bpm = 100;
         current_bpm = bpm;
-        clk_cv_range = 20;
+        clk_cv_range = 0;
         divider = 4;
         current_div = divider;
         div_counter = 0;

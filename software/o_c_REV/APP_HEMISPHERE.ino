@@ -6,6 +6,7 @@ namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
+#include "BeigeMazeSysEx.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
@@ -49,6 +50,7 @@ public:
     void Init() {
         select_mode = -1; // Not selecting
         filter_select_mode = -1; // Not selecting filter
+        midi_in_hemisphere = -1; // No MIDI In
         Applet applets[] = HEMISPHERE_APPLETS;
         memcpy(&available_applets, &applets, sizeof(applets));
         forwarding = 0;
@@ -79,6 +81,8 @@ public:
 
     void SetApplet(int hemisphere, int index) {
         my_applet[hemisphere] = index;
+        if (midi_in_hemisphere == hemisphere) midi_in_hemisphere = -1;
+        if (available_applets[index].id & 0x80) midi_in_hemisphere = hemisphere;
         available_applets[index].Start(hemisphere);
         apply_value(hemisphere, available_applets[index].id);
     }
@@ -95,6 +99,16 @@ public:
     }
 
     void ExecuteControllers() {
+        if (midi_in_hemisphere == -1) {
+            // Only one ISR can look for MIDI messages at a time, so we need to check
+            // for another MIDI In applet before looking for sysex. Note that applets
+            // that use MIDI In should check for sysex themselves; see Midi In for an
+            // example.
+            if (usbMIDI.read() && usbMIDI.getType() == 7) {
+                OnReceiveSysEx();
+            }
+        }
+
         for (int h = 0; h < 2; h++)
         {
             int index = my_applet[h];
@@ -138,8 +152,7 @@ public:
         if (select_mode == h) {
             select_mode = -1; // Pushing a button for the selected side turns off select mode
             filter_select_mode = -1; // and filter select mode
-        }
-        else {
+        } else {
             int index = my_applet[h];
             if (event.type == UI::EVENT_BUTTON_PRESS) {
                 available_applets[index].OnButtonPress(h);
@@ -148,10 +161,16 @@ public:
     }
 
     void DelegateSelectButtonPush(int hemisphere) {
-        if (filter_select_mode > -1) {
+        if (filter_select_mode == hemisphere) {
+            // Exit filter select mode if the corresponding button is pressed
+            select_mode = filter_select_mode;
             filter_select_mode = -1;
+        } else if (filter_select_mode > -1) {
+            // Move to the other hemisphere if the opposite button is pressed
+            select_mode = hemisphere;
+            filter_select_mode = hemisphere;
         } else {
-            if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == select_mode) {
+            if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == first_click) {
                 // This is a double-click, so activate corresponding help screen, leave
                 // Select Mode, and reset the double-click timer
                 SetHelpScreen(hemisphere);
@@ -169,6 +188,7 @@ public:
                     else select_mode = hemisphere; // Otherwise, set select mode
                     click_tick = OC::CORE::ticks;
                 }
+                first_click = hemisphere;
             }
         }
     }
@@ -217,7 +237,28 @@ public:
     }
 
     void EnableFilterSelect() {
-        filter_select_mode = select_mode;
+        if (help_hemisphere < 0) {
+            if (select_mode < 0) select_mode = 0; // Default to the left hemisphere
+            filter_select_mode = select_mode;
+        }
+    }
+
+    void OnSendSysEx() {
+        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
+        RequestAppletData();
+        uint8_t packet[sysex.getWrappedSize()];
+        sysex.Wrap(packet, values_, 'H');
+        usbMIDI.sendSysEx(sysex.getWrappedSize(), packet);
+        usbMIDI.send_now();
+    }
+
+    void OnReceiveSysEx() {
+        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
+        uint8_t *data = usbMIDI.getSysExArray();
+        if (sysex.verify(data)) {
+            sysex.Unwrap(values_, data);
+            Resume();
+        }
     }
 
 private:
@@ -229,7 +270,9 @@ private:
     int select_mode;
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
+    int midi_in_hemisphere; // Which of the hemispheres (if any) is using MIDI In
     uint32_t click_tick; // Measure time between clicks for double-click
+    int first_click; // The first button pushed of a double-click set, to see if the same one is pressed
 
     void DrawFilterSelector(int h) {
         int offset = h * 64;
@@ -272,8 +315,7 @@ private:
         // If an applet uses MIDI In, it can only be selected in one
         // hemisphere, and is designated by bit 7 set in its id.
         if (available_applets[index].id & 0x80) {
-            int opp_index = my_applet[1 - select_mode];
-            if (available_applets[opp_index].id & 0x80) {
+            if (midi_in_hemisphere == (1 - select_mode)) {
                 return get_next_applet_index(index, dir);
             }
         }
@@ -288,7 +330,6 @@ private:
 
         return index;
     }
-
 };
 
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
@@ -300,12 +341,15 @@ SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 65535, "Data R high", NULL, settings::STORAGE_TYPE_U16},
 };
 
+HemisphereManager manager;
+
+void ReceiveManagerSysEx() {
+    manager.OnReceiveSysEx();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //// O_C App Functions
 ////////////////////////////////////////////////////////////////////////////////
-
-HemisphereManager manager;
 
 // App stubs
 void HEMISPHERE_init() {
@@ -332,6 +376,9 @@ void HEMISPHERE_isr() {
 }
 
 void HEMISPHERE_handleAppEvent(OC::AppEvent event) {
+    if (event == OC::APP_EVENT_SUSPEND) {
+        manager.OnSendSysEx();
+    }
 }
 
 void HEMISPHERE_loop() {} // Essentially deprecated in favor of ISR

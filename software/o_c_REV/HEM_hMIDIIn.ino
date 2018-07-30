@@ -9,6 +9,7 @@
 #define HEM_MIDI_CC 3
 #define HEM_MIDI_AFTERTOUCH 5
 #define HEM_MIDI_PITCHBEND 6
+#define HEM_MIDI_SYSEX 7
 
 // The functions available for each output
 #define HEM_MIDI_NOTE_OUT 0
@@ -52,9 +53,13 @@ public:
 
     void Controller() {
         if (usbMIDI.read()) {
+            int message = usbMIDI.getType();
+            if (message == HEM_MIDI_SYSEX) {
+                ReceiveManagerSysEx();
+            }
+
             if (usbMIDI.getChannel() == (channel + 1)) {
                 last_tick = OC::CORE::ticks;
-                int message = usbMIDI.getType();
                 int data1 = usbMIDI.getData1();
                 int data2 = usbMIDI.getData2();
                 bool log_this = false;
@@ -148,6 +153,7 @@ public:
 
     void OnButtonPress() {
         if (++cursor > 2) cursor = 0;
+        ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
@@ -203,6 +209,7 @@ private:
     int first_note; // First note received, for awaiting Note Off
     const char* fn_name[7];
     
+    // Logging
     MIDILogEntry log[7];
     int log_index;
 
@@ -242,7 +249,10 @@ private:
         gfxCursor(24, 23 + (cursor * 10), 39);
 
         // Last log entry
-        if (log_index > 0) log_entry(55, log_index - 1);
+        if (log_index > 0) {
+            gfxDottedLine(1, 55, 62, 55, 2);
+            log_entry(56, log_index - 1);
+        }
     }
 
     void DrawLog() {
@@ -283,7 +293,6 @@ private:
         }
     }
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
