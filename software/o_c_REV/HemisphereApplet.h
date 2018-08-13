@@ -4,7 +4,8 @@
 
 #define LEFT_HEMISPHERE 0
 #define RIGHT_HEMISPHERE 1
-#define HEMISPHERE_MAX_CV 7677
+#define HEMISPHERE_MAX_CV 7680
+#define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
 #define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
@@ -17,13 +18,27 @@
 #define HEMISPHERE_HELP_ENCODER 3
 
 // Simulated fixed floats by multiplying and dividing by powers of 2
+#ifndef int2simfloat
 #define int2simfloat(x) (x << 14)
 #define simfloat2int(x) (x >> 14)
 typedef int32_t simfloat;
+#endif
 
 // Hemisphere-specific macros
 #define BottomAlign(h) (62 - h)
 #define ForEachChannel(ch) for(int ch = 0; ch < 2; ch++)
+
+// Icons
+const uint8_t CHECK_ICON[8]      = {0x00, 0xf0, 0x40, 0x20, 0x10, 0x08, 0x04, 0x00};
+const uint8_t X_NOTE_ICON[8]     = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
+const uint8_t METER_ICON[8]      = {0x7e, 0x10, 0x1c, 0x10, 0x1c, 0x10, 0x7e, 0x00};
+const uint8_t NOTE_ICON[8]       = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
+const uint8_t CLOCK_ICON[8]      = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
+const uint8_t MOD_ICON[8]        = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
+const uint8_t BEND_ICON[8]       = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x1c};
+const uint8_t AFTERTOUCH_ICON[8] = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
+const uint8_t MIDI_ICON[8]       = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
+const uint8_t CV_ICON[8]         = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
 
 // Specifies where data goes in flash storage for each selcted applet, and how big it is
 typedef struct PackLocation {
@@ -34,11 +49,11 @@ typedef struct PackLocation {
 class HemisphereApplet {
 public:
 
-    virtual const char* applet_name(); // Maximum of 10 characters
-    virtual void View();
-    virtual void ScreensaverView();
+    virtual const char* applet_name(); // Maximum of 9 characters
     virtual void Start();
     virtual void Controller();
+    virtual void View();
+    virtual void ScreensaverView();
 
     void BaseStart(int h) {
         hemisphere = h;
@@ -119,7 +134,7 @@ public:
     void DrawNotifications() {
         // CV Forwarding Icon
         if (master_clock_bus) {
-            graphics.drawBitmap8(56, 1, 8, clock_icon);
+            graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
         }
     }
 
@@ -233,14 +248,10 @@ public:
         return (In(ch) > 300 || In(ch) < -300) ? In(ch) : 0;
     }
 
-    void Out(int ch, int value, int octave) {
+    void Out(int ch, int value, int octave = 0) {
         DAC_CHANNEL channel = (DAC_CHANNEL)(ch + io_offset);
         OC::DAC::set_pitch(channel, value, octave);
-        outputs[ch] = value;
-    }
-
-    void Out(int ch, int value) {
-        Out(ch, value, 0);
+        outputs[ch] = value + (octave * (12 << 7));
     }
 
     bool Clock(int ch) {
@@ -259,13 +270,9 @@ public:
         return clocked;
     }
 
-    void ClockOut(int ch, int ticks) {
+    void ClockOut(int ch, int ticks = HEMISPHERE_CLOCK_TICKS) {
         clock_countdown[ch] = ticks;
         Out(ch, 0, 5);
-    }
-
-    void ClockOut(int ch) {
-        ClockOut(ch, HEMISPHERE_CLOCK_TICKS);
     }
 
     bool Gate(int ch) {
@@ -296,7 +303,6 @@ protected:
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
-    const uint8_t clock_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////
@@ -354,16 +360,15 @@ protected:
      *     // etc...
      * }
      */
-    void StartADCLag(int ch) {
+    void StartADCLag(int ch = 0) {
         adc_lag_countdown[ch] = HEMISPHERE_ADC_LAG;
     }
-    void StartADCLag() {StartADCLag(0);}
 
-    bool EndOfADCLag(int ch) {
+    bool EndOfADCLag(int ch = 0) {
         return (--adc_lag_countdown[ch] == 0);
     }
-    bool EndOfADCLag() {return EndOfADCLag(0);}
 
+    /* Master Clock Forwarding is activated. This is updated with each ISR cycle by the Hemisphere Manager */
     bool MasterClockForwarded() {return master_clock_bus;}
 
 private:

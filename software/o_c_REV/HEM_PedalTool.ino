@@ -182,7 +182,7 @@ private:
     
     void DrawSelector() {
         gfxCursor(0, 23, 63);
-        if (OC::CORE::ticks - last_trigger < 1667) gfxBitmap(54, 15, 8, clock_icon);
+        if (OC::CORE::ticks - last_trigger < 1667) gfxBitmap(54, 15, 8, CLOCK_ICON);
 
         if (Ch_GateInv) {
           gfxBitmap(40, 15, 12, NOT_bitmap);

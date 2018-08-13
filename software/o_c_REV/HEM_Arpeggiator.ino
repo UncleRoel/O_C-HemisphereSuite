@@ -317,7 +317,7 @@ private:
           gfxPrint(2, 16, current_bpm);
           gfxPrint(" BPM");
         }
-        if (OC::CORE::ticks - tick_at_last_note < 1667) gfxBitmap(54, 16, 8, clock_icon);
+        if (OC::CORE::ticks - tick_at_last_note < 1667) gfxBitmap(54, 16, 8, CLOCK_ICON);
         gfxPrint(2, 28, "mod ");
         gfxPrint(hem_arp_cvmods[clk_cv_range]);
         gfxPrint(2, 40, Arp_Chords[selected_chord].chord_name);

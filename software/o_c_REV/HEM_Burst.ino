@@ -1,6 +1,7 @@
 #define HEM_BURST_NUMBER_MAX 12
 #define HEM_BURST_SPACING_MAX 500
 #define HEM_BURST_SPACING_MIN 8
+#define HEM_BURST_CLOCKDIV_MAX 8
 
 class Burst : public HemisphereApplet {
 public:
@@ -12,14 +13,20 @@ public:
     void Start() {
         cursor = 0;
         number = 4;
+        div = 1;
         spacing = 50;
         bursts_to_go = 0;
         clocked = 0;
+        last_number_cv_tick = 0;
     }
 
     void Controller() {
         // Settings and modulation over CV
-        if (DetentedIn(0) > 0) number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX - 1) + 1;
+        if (DetentedIn(0) > 0) {
+            number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX + 1);
+            number = constrain(number, 1, HEM_BURST_NUMBER_MAX);
+            last_number_cv_tick = OC::CORE::ticks;
+        }
         int spacing_mod = clocked ? 0 : Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 500);
 
         // Get timing information
@@ -32,22 +39,35 @@ public:
         }
         ticks_since_clock++;
 
+        // Get spacing with clock division or multiplication calculated
+        int effective_spacing = get_effective_spacing();
+
         // Handle a burst set in progress
         if (bursts_to_go > 0) {
             if (--burst_countdown <= 0) {
-                int modded_spacing = spacing + spacing_mod;
+                int modded_spacing = effective_spacing + spacing_mod;
                 if (modded_spacing < HEM_BURST_SPACING_MIN) modded_spacing = HEM_BURST_SPACING_MIN;
-                ClockOut(0, 34); // Short trigger, about 2ms
+                ClockOut(0);
                 if (--bursts_to_go > 0) burst_countdown = modded_spacing * 17; // Reset for next burst
                 else GateOut(1, 0); // Turn off the gate
             }
         }
 
-        // Handle a new burst set trigger
-        if (Clock(1)) {
+        // Handle the triggering of a new burst set.
+        //
+        // number_is_changing: If Number is being changed via CV, employ the ADC Lag mechanism
+        // so that Number can be set and gated with a sequencer (or something). Otherwise, if
+        // Number is not being changed via CV, fire the set of bursts right away. This is done so that
+        // the applet can adapt to contexts that involve (1) the need to accurately interpret rapidly-
+        // changing CV values or (2) the need for tight timing when Number is static-ish.
+        bool number_is_changing = (OC::CORE::ticks - last_number_cv_tick < 80000);
+        if (Clock(1) && number_is_changing) StartADCLag();
+
+        if (EndOfADCLag() || (Clock(1) && !number_is_changing)) {
+            ClockOut(0);
             GateOut(1, 1);
-            bursts_to_go = number;
-            burst_countdown = spacing * 17;
+            bursts_to_go = number - 1;
+            burst_countdown = effective_spacing * 17;
         }
     }
 
@@ -63,7 +83,9 @@ public:
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        cursor += 1;
+        if (cursor > 2) cursor = 0;
+        if (cursor > 1 && !clocked) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
@@ -72,18 +94,27 @@ public:
             spacing = constrain(spacing += direction, HEM_BURST_SPACING_MIN, HEM_BURST_SPACING_MAX);
             clocked = 0;
         }
+        if (cursor == 2) {
+            div += direction;
+            if (div > HEM_BURST_CLOCKDIV_MAX) div = HEM_BURST_CLOCKDIV_MAX;
+            if (div < -HEM_BURST_CLOCKDIV_MAX) div = -HEM_BURST_CLOCKDIV_MAX;
+            if (div == 0) div = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
+            if (div == -1) div = 1; // Must be moving up to hit -1 (see previous line)
+        }
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,8}, number);
+        Pack(data, PackLocation {8,8}, spacing);
+        Pack(data, PackLocation {16,8}, div + 8);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        number = Unpack(data, PackLocation {0,8});
+        spacing = Unpack(data, PackLocation {8,8});
+        div = Unpack(data, PackLocation {16,8}) - 8;
     }
 
 protected:
@@ -92,7 +123,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Burst";
         help[HEMISPHERE_HELP_CVS]      = "1=Number 2=Spacing";
         help[HEMISPHERE_HELP_OUTS]     = "1=Burst 2=Gate";
-        help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing";
+        help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing/Div";
         //                               "------------------" <-- Size Guide
     }
     
@@ -103,10 +134,13 @@ private:
     bool clocked; // When a clock signal is received at Digital 1, clocked is activated, and the
                   // spacing of a new burst is number/clock length.
     int ticks_since_clock; // When clocked, this is the time since the last clock.
+    int last_number_cv_tick; // The last time the number was changed via CV. This is used to
+                             // decide whether the ADC delay should be used when clocks come in.
 
     // Settings
     int number; // How many bursts fire at each trigger
     int spacing; // How many ms pass between each burst
+    int div; // Divide or multiply the clock tempo
 
     void DrawSelector() {
         // Number
@@ -114,10 +148,15 @@ private:
         gfxPrint(28, 15, "bursts");
 
         // Spacing
-        gfxPrint(1, 25, spacing);
+        gfxPrint(1, 25, clocked ? get_effective_spacing() : spacing);
         gfxPrint(28, 25, "ms");
+
+        // Div
         if (clocked) {
-            gfxBitmap(55, 25, 8, clock_icon);
+            gfxBitmap(1, 35, 8, CLOCK_ICON);
+            gfxPrint(11, 35, div < 0 ? "x" : "/");
+            gfxPrint(div < 0 ? -div : div);
+            gfxPrint(div < 0 ? " Mult" : " Div");
         }
 
         // Cursor
@@ -127,8 +166,17 @@ private:
     void DrawIndicator() {
         for (int i = 0; i < bursts_to_go; i++)
         {
-            gfxFrame(1 + (i * 4), 40, 3, 12);
+            gfxFrame(1 + (i * 5), 46, 4, 12);
         }
+    }
+
+    int get_effective_spacing() {
+        int effective_spacing = spacing;
+        if (clocked) {
+            if (div > 1) effective_spacing *= div;
+            if (div < 0) effective_spacing /= -div;
+        }
+        return effective_spacing;
     }
 
 };

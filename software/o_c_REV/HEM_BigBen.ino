@@ -167,13 +167,13 @@ private:
         gfxCursor(0, y + 9, 63);
         gfxPrint(2, 16, current_bpm);
         gfxPrint(" BPM");
-        if (OC::CORE::ticks - last_clock < 1667) gfxBitmap(54, 16, 8, clock_icon);
+        if (OC::CORE::ticks - last_clock < 1667) gfxBitmap(54, 16, 8, CLOCK_ICON);
         gfxPrint(2, 28, "mod: ");
         gfxPrint(clk_cv_range);
         gfxPrint(2, 40, "1/");
         gfxPrint(current_div);
         gfxPrint(" DIV");
-        if (OC::CORE::ticks - last_div < 1667) gfxBitmap(54, 40, 8, clock_icon);
+        if (OC::CORE::ticks - last_div < 1667) gfxBitmap(54, 40, 8, CLOCK_ICON);
         gfxPrint(2, 52, "mod: ");
         gfxPrint(div_cv_range);   
     }

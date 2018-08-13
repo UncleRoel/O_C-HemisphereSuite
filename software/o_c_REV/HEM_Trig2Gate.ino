@@ -187,7 +187,7 @@ private:
           else gfxPrint(1, y, Ch_GateLengthMenu[ch]);
           gfxPrint("ms");
           
-          if (OC::CORE::ticks - last_trigger[ch] < 1667) gfxBitmap(54, y, 8, clock_icon);
+          if (OC::CORE::ticks - last_trigger[ch] < 1667) gfxBitmap(54, y, 8, CLOCK_ICON);
 
           // Scope code
           for (int s = 0; s <64; s++)

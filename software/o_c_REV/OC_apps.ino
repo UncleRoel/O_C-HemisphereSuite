@@ -41,15 +41,17 @@ OC::App available_apps[] = {
   DECLARE_APP('M','I', "MIDI Interface", MIDI, MIDI_isr),
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
+  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
   DECLARE_APP('R','F', "Voltages", REFS, REFS_isr),
 };
 #else 
 OC::App available_apps[] = {
   DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
   DECLARE_APP('D','T', "Darkest Timeline", DARKESTTIMELINE, DARKESTTIMELINE_isr),
-  DECLARE_APP('M','I', "MIDI Interface", MIDI, MIDI_isr),
+  DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
+  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
   DECLARE_APP('R','F', "References", REFS, REFS_isr),
 };
 #endif
