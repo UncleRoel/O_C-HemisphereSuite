@@ -308,7 +308,7 @@ private:
           }
           // Multiplicating
           else {
-            gfxPrint(2, 16, "X");
+            gfxPrint(2, 16, "x");
             gfxPrint(-current_div);
             gfxPrint(" MULT");
           }

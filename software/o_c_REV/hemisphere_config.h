@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 35
+#define HEMISPHERE_AVAILABLE_APPLETS 40
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -19,7 +19,7 @@
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \
     DECLARE_APPLET( 12, 0x10, Calculate),\
-    DECLARE_APPLET( 32, 0x02, Carpeggio), \
+    DECLARE_APPLET( 32, 0x0a, Carpeggio), \
     DECLARE_APPLET(  6, 0x04, ClockDivider), \
     DECLARE_APPLET( 28, 0x04, ClockSkip), \
     DECLARE_APPLET( 30, 0x10, Compare), \
@@ -53,3 +53,5 @@
     DECLARE_APPLET( 53, 0x80, Chrono), \
     DECLARE_APPLET( 54, 0x80, PedalTool), \
 }
+
+//    DECLARE_APPLET( 13, 0x14, TLNeuron), \
