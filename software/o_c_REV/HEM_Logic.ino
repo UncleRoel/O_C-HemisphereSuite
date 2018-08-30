@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 // Logical gate functions and typedef to function pointer
 #define HEMISPHERE_NUMBER_OF_LOGIC 7
 bool hem_AND(bool s1, bool s2) {return s1 & s2;}
@@ -138,38 +158,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Logic Logic_instance[2];
 
-void Logic_Start(int hemisphere) {
+void Logic_Start(bool hemisphere) {
     Logic_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Logic_Controller(int hemisphere, bool forwarding) {
+void Logic_Controller(bool hemisphere, bool forwarding) {
     Logic_instance[hemisphere].BaseController(forwarding);
 }
 
-void Logic_View(int hemisphere) {
+void Logic_View(bool hemisphere) {
     Logic_instance[hemisphere].BaseView();
 }
 
-void Logic_Screensaver(int hemisphere) {
+void Logic_Screensaver(bool hemisphere) {
     Logic_instance[hemisphere].BaseScreensaverView();
 }
 
-void Logic_OnButtonPress(int hemisphere) {
+void Logic_OnButtonPress(bool hemisphere) {
     Logic_instance[hemisphere].OnButtonPress();
 }
 
-void Logic_OnEncoderMove(int hemisphere, int direction) {
+void Logic_OnEncoderMove(bool hemisphere, int direction) {
     Logic_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Logic_ToggleHelpScreen(int hemisphere) {
+void Logic_ToggleHelpScreen(bool hemisphere) {
     Logic_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Logic_OnDataRequest(int hemisphere) {
+uint32_t Logic_OnDataRequest(bool hemisphere) {
     return Logic_instance[hemisphere].OnDataRequest();
 }
 
-void Logic_OnDataReceive(int hemisphere, uint32_t data) {
+void Logic_OnDataReceive(bool hemisphere, uint32_t data) {
     Logic_instance[hemisphere].OnDataReceive(data);
 }

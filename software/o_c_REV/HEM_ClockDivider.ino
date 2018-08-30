@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define HEM_CLOCKDIV_MAX 8
 
 class ClockDivider : public HemisphereApplet {
@@ -155,38 +175,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ClockDivider ClockDivider_instance[2];
 
-void ClockDivider_Start(int hemisphere) {
+void ClockDivider_Start(bool hemisphere) {
     ClockDivider_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ClockDivider_Controller(int hemisphere, bool forwarding) {
+void ClockDivider_Controller(bool hemisphere, bool forwarding) {
     ClockDivider_instance[hemisphere].BaseController(forwarding);
 }
 
-void ClockDivider_View(int hemisphere) {
+void ClockDivider_View(bool hemisphere) {
     ClockDivider_instance[hemisphere].BaseView();
 }
 
-void ClockDivider_Screensaver(int hemisphere) {
+void ClockDivider_Screensaver(bool hemisphere) {
     ClockDivider_instance[hemisphere].BaseScreensaverView();
 }
 
-void ClockDivider_OnButtonPress(int hemisphere) {
+void ClockDivider_OnButtonPress(bool hemisphere) {
     ClockDivider_instance[hemisphere].OnButtonPress();
 }
 
-void ClockDivider_OnEncoderMove(int hemisphere, int direction) {
+void ClockDivider_OnEncoderMove(bool hemisphere, int direction) {
     ClockDivider_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ClockDivider_ToggleHelpScreen(int hemisphere) {
+void ClockDivider_ToggleHelpScreen(bool hemisphere) {
     ClockDivider_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ClockDivider_OnDataRequest(int hemisphere) {
+uint32_t ClockDivider_OnDataRequest(bool hemisphere) {
     return ClockDivider_instance[hemisphere].OnDataRequest();
 }
 
-void ClockDivider_OnDataReceive(int hemisphere, uint32_t data) {
+void ClockDivider_OnDataReceive(bool hemisphere, uint32_t data) {
     ClockDivider_instance[hemisphere].OnDataReceive(data);
 }

@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define HEM_SLEW_MAX_VALUE 200
 #define HEM_SLEW_MAX_TICKS 64000
 
@@ -135,38 +155,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Slew Slew_instance[2];
 
-void Slew_Start(int hemisphere) {
+void Slew_Start(bool hemisphere) {
     Slew_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Slew_Controller(int hemisphere, bool forwarding) {
+void Slew_Controller(bool hemisphere, bool forwarding) {
     Slew_instance[hemisphere].BaseController(forwarding);
 }
 
-void Slew_View(int hemisphere) {
+void Slew_View(bool hemisphere) {
     Slew_instance[hemisphere].BaseView();
 }
 
-void Slew_Screensaver(int hemisphere) {
+void Slew_Screensaver(bool hemisphere) {
     Slew_instance[hemisphere].BaseScreensaverView();
 }
 
-void Slew_OnButtonPress(int hemisphere) {
+void Slew_OnButtonPress(bool hemisphere) {
     Slew_instance[hemisphere].OnButtonPress();
 }
 
-void Slew_OnEncoderMove(int hemisphere, int direction) {
+void Slew_OnEncoderMove(bool hemisphere, int direction) {
     Slew_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Slew_ToggleHelpScreen(int hemisphere) {
+void Slew_ToggleHelpScreen(bool hemisphere) {
     Slew_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Slew_OnDataRequest(int hemisphere) {
+uint32_t Slew_OnDataRequest(bool hemisphere) {
     return Slew_instance[hemisphere].OnDataRequest();
 }
 
-void Slew_OnDataReceive(int hemisphere, uint32_t data) {
+void Slew_OnDataReceive(bool hemisphere, uint32_t data) {
     Slew_instance[hemisphere].OnDataReceive(data);
 }

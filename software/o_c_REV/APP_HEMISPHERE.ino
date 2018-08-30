@@ -1,12 +1,33 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "OC_DAC.h"
 #include "OC_digital_inputs.h"
 #include "OC_visualfx.h"
 #include "OC_patterns.h"
+#include "src/drivers/FreqMeasure/OC_FreqMeasure.h"
 namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
-#include "SystemExclusiveHandler.h"
+#include "HSMIDI.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
@@ -19,15 +40,15 @@ namespace menu = OC::menu;
 typedef struct Applet {
   int id;
   uint8_t categories;
-  void (*Start)(int); // Initialize when selected
-  void (*Controller)(int, bool);  // Interrupt Service Routine
-  void (*View)(int);  // Draw main view
-  void (*Screensaver)(int); // Draw screensaver view
-  void (*OnButtonPress)(int); // Encoder button has been pressed
-  void (*OnEncoderMove)(int, int); // Encoder has been rotated
-  void (*ToggleHelpScreen)(int); // Help Screen has been requested
-  uint32_t (*OnDataRequest)(int); // Get a data int from the applet
-  void (*OnDataReceive)(int, uint32_t); // Send a data int to the applet
+  void (*Start)(bool); // Initialize when selected
+  void (*Controller)(bool, bool);  // Interrupt Service Routine
+  void (*View)(bool);  // Draw main view
+  void (*Screensaver)(bool); // Draw screensaver view
+  void (*OnButtonPress)(bool); // Encoder button has been pressed
+  void (*OnEncoderMove)(bool, int); // Encoder has been rotated
+  void (*ToggleHelpScreen)(bool); // Help Screen has been requested
+  uint32_t (*OnDataRequest)(bool); // Get a data int from the applet
+  void (*OnDataReceive)(bool, uint32_t); // Send a data int to the applet
 } Applet;
 
 // The settings specify the selected applets, and 32 bits of data for each applet
@@ -64,7 +85,7 @@ public:
         const char* category_list[] = {"Modulator", "Sequencer",
                                        "Clocking", "Quantizer",
                                        "Utility", "MIDI",
-                                       "Audio", "Other", "ALL"};
+                                       "Logic", "Other", "ALL"};
         for (int i = 0; i < 9; i++) category_name[i] = category_list[i];
         filter[0] = 8; // All
         filter[1] = 8;
@@ -390,7 +411,7 @@ size_t HEMISPHERE_restore(const void *storage) {
     return s;
 }
 
-void HEMISPHERE_isr() {
+void FASTRUN HEMISPHERE_isr() {
     manager.ExecuteControllers();
 }
 

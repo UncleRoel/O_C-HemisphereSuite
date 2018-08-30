@@ -1,65 +1,57 @@
-/*
- * Captain MIDI for Ornament and Crime
- *
- * (c)2018, Jason Justian
- *
- * MIT License applies; see https://github.com/Chysn/O_C-HemisphereSuite/wiki
- */
+// Copyright (c) 2018, Jason Justian
+//
+// Menu & screen cursor Copyright (c) 2016 Patrick Dowling
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 // See https://www.pjrc.com/teensy/td_midi.html
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
-#include "HSAppIO.h"
-#include "SystemExclusiveHandler.h"
+#include "HSApplication.h"
+#include "HSMIDI.h"
 
-const uint8_t MIDI_MSG_NOTE_ON = 1;
-const uint8_t MIDI_MSG_NOTE_OFF = 0;
-const uint8_t MIDI_MSG_MIDI_CC = 3;
-const uint8_t MIDI_MSG_AFTERTOUCH = 5;
-const uint8_t MIDI_MSG_PITCHBEND = 6;
-const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
-const int MIDI_MAX_CV = 7677;
-const int MIDI_3V_CV = 4583;
 const int MIDI_PARAMETER_COUNT = 40;
 const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
 const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
 const int MIDI_LOG_MAX_SIZE = 101;
 
-const char* const midi_out_functions[11] = {
-    "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth"
+// Icons that are used next to the menu items
+const uint8_t MIDI_midi_icon[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
+const uint8_t MIDI_note_icon[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
+const uint8_t MIDI_clock_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
+
+const char* const midi_in_functions[17] = {
+    "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth", "yAxis", "Qtr", "8th", "16th", "24ppq"
 };
-const char* const midi_in_functions[12] = {
-    "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth"
-};
-const char* const midi_channels[17] = {
-    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
-};
-const char* const midi_note_numbers[128] = {
-    "C-1","C#-1","D-1","D#-1","E-1","F-1","F#-1","G-1","G#-1","A-1","A#-1","B-1",
-    "C0","C#0","D0","D#0","E0","F0","F#0","G0","G#0","A0","A#0","B0",
-    "C1","C#1","D1","D#1","E1","F1","F#1","G1","G#1","A1","A#1","B1",
-    "C2","C#2","D2","D#2","E2","F2","F#2","G2","G#2","A2","A#2","B2",
-    "C3","C#3","D3","D#3","E3","F3","F#3","G3","G#3","A3","A#3","B3",
-    "C4","C#4","D4","D#4","E4","F4","F#4","G4","G#4","A4","A#4","B4",
-    "C5","C#5","D5","D#5","E5","F5","F#5","G5","G#5","A5","A#5","B5",
-    "C6","C#6","D6","D#6","E6","F6","F#6","G6","G#6","A6","A#6","B6",
-    "C7","C#7","D7","D#7","E7","F7","F#7","G7","G#7","A7","A#7","B7",
-    "C8","C#8","D8","D#8","E8","F8","F#8","G8","G#8","A8","A#8","B8",
-    "C9","C#9","D9","D#9","E9","F9","F#9","G9"
+const char* const midi_out_functions[12] = {
+    "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth", "yAxis"
 };
 
 #define MIDI_SETUP_PARAMETER_LIST \
-{ 0, 0, 11, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },\
@@ -105,7 +97,12 @@ enum MIDI_IN_FUNCTION {
     MIDI_IN_EXPRESSION,
     MIDI_IN_PAN,
     MIDI_IN_HOLD,
-    MIDI_IN_BREATH
+    MIDI_IN_BREATH,
+    MIDI_IN_Y_AXIS,
+    MIDI_IN_CLOCK_4TH,
+    MIDI_IN_CLOCK_8TH,
+    MIDI_IN_CLOCK_16TH,
+    MIDI_IN_CLOCK_24PPQN,
 };
 
 enum MIDI_OUT_FUNCTION {
@@ -119,16 +116,18 @@ enum MIDI_OUT_FUNCTION {
     MIDI_OUT_EXPRESSION,
     MIDI_OUT_PAN,
     MIDI_OUT_HOLD,
-    MIDI_OUT_BREATH
+    MIDI_OUT_BREATH,
+    MIDI_OUT_Y_AXIS,
 };
 
-const char* const midi_messages[6] = {
-    "Note", "Off", "CC#", "Aft", "Bend", "SysEx"
+const char* const midi_messages[7] = {
+    "Note", "Off", "CC#", "Aft", "Bend", "SysEx", "Diag"
 };
+//#define MIDI_DIAGNOSTIC
 struct CaptainMIDILog {
     bool midi_in; // 0 = out, 1 = in
     char io; // 1, 2, 3, 4, A, B, C, D
-    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend, 5 = SysEx
+    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend, 5 = SysEx, 6 = Diagnostic
     uint8_t channel; // MIDI channel
     int16_t data1;
     int16_t data2;
@@ -151,23 +150,23 @@ struct CaptainMIDILog {
             if (!midi_in) graphics.print(">");
             graphics.print(" ");
             graphics.print(midi_channels[channel]);
-            graphics.setPrintPos(36, y);
+            graphics.setPrintPos(37, y);
 
             graphics.print(midi_messages[message]);
-            graphics.setPrintPos(72, y);
+            graphics.setPrintPos(73, y);
 
             uint8_t x_offset = (data2 < 100) ? 6 : 0;
             x_offset += (data2 < 10) ? 6 : 0;
 
             if (message == 0 || message == 1) {
                 graphics.print(midi_note_numbers[data1]);
-                graphics.setPrintPos(102 + x_offset, y);
+                graphics.setPrintPos(103 + x_offset, y);
                 graphics.print(data2); // Velocity
             }
 
             if (message == 2 || message == 3) {
                 if (message == 2) graphics.print(data1); // Controller number
-                graphics.setPrintPos(102 + x_offset, y);
+                graphics.setPrintPos(103 + x_offset, y);
                 graphics.print(data2); // Value
             }
 
@@ -175,11 +174,17 @@ struct CaptainMIDILog {
                 if (data2 > 0) graphics.print("+");
                 graphics.print(data2); // Aftertouch or bend value
             }
+
+            if (message == 6) {
+                graphics.print(data1);
+                graphics.print("/");
+                graphics.print(data2);
+            }
         }
     }
 };
 
-class CaptainMIDI : public SystemExclusiveHandler, public HSAppIO,
+class CaptainMIDI : public SystemExclusiveHandler, public HSApplication,
     public settings::SettingsBase<CaptainMIDI, MIDI_SETTING_LAST> {
 public:
     menu::ScreenCursor<menu::kScreenLines> cursor;
@@ -188,8 +193,6 @@ public:
         screen = 0;
         display = 0;
         cursor.Init(0, 7);
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         log_index = 0;
         log_view = 0;
         Reset();
@@ -216,8 +219,6 @@ public:
             if (indicator_in[ch] > 0) --indicator_in[ch];
             if (indicator_out[ch] > 0) --indicator_out[ch];
         }
-
-        HSIOController();
     }
 
     void View() {
@@ -226,7 +227,7 @@ public:
         else DrawLogScreen();
     }
 
-    void Screensaver() {
+    void ScreensaverView() {
         DrawSetupScreens();
     }
 
@@ -284,6 +285,7 @@ public:
             indicator_out[ch] = 0;
             Out(ch, 0);
         }
+        clock_count = 0;
     }
 
     void Panic() {
@@ -379,9 +381,6 @@ public:
    }
 
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Housekeeping
     int screen; // 0=Assign 2=Channel 3=Transpose
     bool display; // 0=Setup Edit 1=Log
@@ -396,6 +395,7 @@ private:
     // MIDI In
     int note_in[4]; // Up to four notes at a time are kept track of with MIDI In
     uint16_t indicator_in[4]; // A MIDI indicator will display next to MIDI In assignment
+    uint8_t clock_count; // MIDI clock counter (24ppqn)
 
     // MIDI Out
     bool gated[4]; // Current gated status of each input
@@ -406,13 +406,8 @@ private:
     uint16_t indicator_out[4]; // A MIDI indicator will display next to MIDI Out assignment
 
     void DrawSetupScreens() {
-        // Icons that are used next to the menu items
-        const uint8_t midi_icon[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
-        const uint8_t note_icon[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
-
         // Create the header, showing the current Setup and Screen name
-        menu::DefaultTitleBar::Draw();
-        graphics.print("Setup ");
+        gfxHeader("Setup ");
         graphics.print(get_setup_number() + 1);
         if (screen == 0) graphics.print("   MIDI Assign");
         if (screen == 1) graphics.print("  MIDI Channel");
@@ -438,13 +433,21 @@ private:
                             graphics.setPrintPos(70, list_item.y + 2);
                             graphics.print(midi_note_numbers[note_in[p]]);
                         }
-                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, MIDI_midi_icon);
                 }
 
                 // Indicate if the assignment is a note type
                 if (get_in_channel(p) > 0 && get_in_assign(p) == MIDI_IN_NOTE)
-                    graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
+                    graphics.drawBitmap8(56, list_item.y + 1, 8, MIDI_note_icon);
                 else if (screen > 1) suppress = 1;
+
+                // Indicate if the assignment is a clock
+                if (get_in_assign(p) >= MIDI_IN_CLOCK_4TH) {
+                    uint8_t o_x = (clock_count < 12) ? 2 : 0;
+                    graphics.drawBitmap8(80 + o_x, list_item.y + 1, 8, MIDI_clock_icon);
+                    if (screen > 0) suppress = 1;
+                }
+
             } else { // It's a MIDI Out assignment
                 p -= 4;
                 if (indicator_out[p] > 0 || note_out[p] > -1) {
@@ -453,12 +456,12 @@ private:
                             graphics.setPrintPos(70, list_item.y + 2);
                             graphics.print(midi_note_numbers[note_out[p]]);
                         }
-                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, MIDI_midi_icon);
                 }
 
                 // Indicate if the assignment is a note type
                 if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO))
-                    graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
+                    graphics.drawBitmap8(56, list_item.y + 1, 8, MIDI_note_icon);
                 else if (screen > 1) suppress = 1;
             }
 
@@ -473,9 +476,7 @@ private:
     }
 
     void DrawLogScreen() {
-        menu::DefaultTitleBar::Draw();
-        graphics.setPrintPos(0,1);
-        graphics.print("IO Ch Type  Values");
+        gfxHeader("IO Ch Type  Values");
         if (log_index) {
             for (int l = 0; l < 6; l++)
             {
@@ -496,9 +497,7 @@ private:
     }
 
     void DrawCopyScreen() {
-        menu::DefaultTitleBar::Draw();
-        graphics.setPrintPos(0,1);
-        graphics.print("Copy");
+        gfxHeader("Copy");
 
         graphics.setPrintPos(8, 28);
         graphics.print("Setup ");
@@ -542,9 +541,7 @@ private:
 
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
-                    quantizer.Process(In(ch), 0, 0);
-                    uint8_t midi_note = quantizer.NoteNumber() + get_out_transpose(ch) - 4;
-                    midi_note = constrain(midi_note, 0, 127);
+                    uint8_t midi_note = MIDIQuantizer::NoteNumber(In(ch), get_out_transpose(ch));
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {
                         // Send note off if the note has changed
@@ -563,7 +560,7 @@ private:
                         for (int vch = 0; vch < 4; vch++)
                         {
                             if (get_out_assign(vch) == MIDI_OUT_VELOCITY && get_out_channel(vch) == out_ch) {
-                                velocity = Proportion(In(vch), MIDI_MAX_CV, 127);
+                                velocity = Proportion(In(vch), HSAPPLICATION_5V, 127);
                             }
                         }
                         velocity = constrain(velocity, 0, 127);
@@ -594,13 +591,14 @@ private:
 
                 // Modulation wheel
                 if (out_fn == MIDI_OUT_MOD || out_fn >= MIDI_OUT_EXPRESSION) {
-                    int cc = 1; // Modulation
+                    int cc = 1; // Modulation wheel
                     if (out_fn == MIDI_OUT_EXPRESSION) cc = 11;
                     if (out_fn == MIDI_OUT_PAN) cc = 10;
                     if (out_fn == MIDI_OUT_HOLD) cc = 64;
                     if (out_fn == MIDI_OUT_BREATH) cc = 2;
+                    if (out_fn == MIDI_OUT_Y_AXIS) cc = 74;
 
-                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     if (cc == 64) value = (value >= 60) ? 127 : 0; // On or off for sustain pedal
 
@@ -611,7 +609,7 @@ private:
 
                 // Aftertouch
                 if (out_fn == MIDI_OUT_AFTERTOUCH) {
-                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     usbMIDI.sendAfterTouch(value, out_ch);
                     UpdateLog(0, ch, 3, out_ch, 0, value);
@@ -620,7 +618,7 @@ private:
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    int16_t bend = Proportion(this_cv + MIDI_3V_CV, MIDI_3V_CV * 2, 16383);
+                    int16_t bend = Proportion(this_cv + HSAPPLICATION_3V, HSAPPLICATION_3V * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
                     UpdateLog(0, ch, 4, out_ch, 0, bend - 8192);
@@ -642,6 +640,12 @@ private:
             // Handle system exclusive dump for Setup data
             if (message == MIDI_MSG_SYSEX) OnReceiveSysEx();
 
+            // Listen for incoming clock
+            if (message == MIDI_MSG_REALTIME && data1 == 0) {
+                if (++clock_count >= 24) clock_count = 0;
+            }
+
+
             bool note_captured = 0; // A note or gate should only be captured by
             bool gate_captured = 0; // one assignment, to allow polyphony in the interface
 
@@ -660,7 +664,7 @@ private:
                             int note = data1 + get_in_transpose(ch);
                             note = constrain(note, 0, 127);
                             if (in_in_range(ch, note)) {
-                                Out(ch, quantizer.Lookup(note));
+                                Out(ch, MIDIQuantizer::CV(note));
                                 UpdateLog(1, ch, 0, in_ch, note, data2);
                                 indicator = 1;
                                 note_captured = 1;
@@ -685,7 +689,7 @@ private:
 
                         if (in_fn == MIDI_IN_VELOCITY) {
                             // Send velocity data to CV
-                            Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                            Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                             indicator = 1;
                         }
                     }
@@ -709,15 +713,17 @@ private:
 
                 bool cc = (in_fn == MIDI_IN_MOD || in_fn >= MIDI_IN_EXPRESSION);
                 if (cc && message == MIDI_MSG_MIDI_CC && in_ch == channel) {
-                    uint8_t cc = 1;
+                    uint8_t cc = 1; // Modulation wheel
                     if (in_fn == MIDI_IN_EXPRESSION) cc = 11;
                     if (in_fn == MIDI_IN_PAN) cc = 10;
                     if (in_fn == MIDI_IN_HOLD) cc = 64;
                     if (in_fn == MIDI_IN_BREATH) cc = 2;
+                    if (in_fn == MIDI_IN_Y_AXIS) cc = 74;
+
                     // Send CC wheel to CV
                     if (data1 == cc) {
                         if (in_fn == MIDI_IN_HOLD && data2 > 0) data2 = 127;
-                        Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                        Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                         UpdateLog(1, ch, 2, in_ch, data1, data2);
                         indicator = 1;
                     }
@@ -725,7 +731,7 @@ private:
 
                 if (message == MIDI_MSG_AFTERTOUCH && in_fn == MIDI_IN_AFTERTOUCH && in_ch == channel) {
                     // Send aftertouch to CV
-                    Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                    Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                     UpdateLog(1, ch, 3, in_ch, data1, data2);
                     indicator = 1;
                 }
@@ -733,14 +739,34 @@ private:
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
                     int data = (data2 << 7) + data1 - 8192;
-                    Out(ch, Proportion(data, 0x7fff, MIDI_3V_CV));
+                    Out(ch, Proportion(data, 0x7fff, HSAPPLICATION_3V));
                     UpdateLog(1, ch, 4, in_ch, 0, data);
                     indicator = 1;
                 }
 
+                if (in_fn >= MIDI_IN_CLOCK_4TH) {
+                    // Clock is unlogged because there can be a lot of it
+                    uint8_t mod = get_clock_mod(in_fn);
+                    if (clock_count % mod == 0) ClockOut(ch);
+                }
+
+                #ifdef MIDI_DIAGNOTIC
+                if (message > 0) {
+                    UpdateLog(1, ch, 6, message, data1, data2);
+                }
+                #endif
+
                 if (indicator) indicator_in[ch] = MIDI_INDICATOR_COUNTDOWN;
             }
         }
+    }
+
+    uint8_t get_clock_mod(int fn) {
+        uint8_t mod = 1;
+        if (fn == MIDI_IN_CLOCK_4TH) mod = 24;
+        if (fn == MIDI_IN_CLOCK_8TH) mod = 12;
+        if (fn == MIDI_IN_CLOCK_16TH) mod = 6;
+        return mod;
     }
 
     int get_in_assign(int ch) {
@@ -793,6 +819,9 @@ private:
     }
 
     void UpdateLog(bool midi_in, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
+        // Don't log SysEx unless the user is on the log display screen
+        if (message == 5 && display == 0) return;
+
         char io = midi_in ? ('A' + ch) : ('1' + ch);
         log[log_index++] = {midi_in, io, message, channel, data1, data2};
         if (log_index == MIDI_LOG_MAX_SIZE) {
@@ -839,7 +868,7 @@ size_t MIDI_restore(const void *storage) {
 }
 
 void MIDI_isr() {
-	return captain_midi_instance.Controller();
+	return captain_midi_instance.BaseController();
 }
 
 void MIDI_handleAppEvent(OC::AppEvent event) {
@@ -852,11 +881,11 @@ void MIDI_loop() {
 }
 
 void MIDI_menu() {
-    captain_midi_instance.View();
+    captain_midi_instance.BaseView();
 }
 
 void MIDI_screensaver() {
-    captain_midi_instance.Screensaver();
+    captain_midi_instance.BaseScreensaverView();
 }
 
 void MIDI_handleButtonEvent(const UI::Event &event) {

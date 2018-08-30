@@ -1,3 +1,25 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Based on Braids Quantizer, Copyright 2015 Olivier Gillet.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
@@ -83,7 +105,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=ScaleSel";
         help[HEMISPHERE_HELP_CVS]      = "1=CV";
         help[HEMISPHERE_HELP_OUTS]     = "A=Pitch";
-        help[HEMISPHERE_HELP_ENCODER]  = "T=Select P=Toggle";
+        help[HEMISPHERE_HELP_ENCODER]  = "T=Note P=Toggle";
         //                               "------------------" <-- Size Guide
     }
     
@@ -144,38 +166,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ScaleDuet ScaleDuet_instance[2];
 
-void ScaleDuet_Start(int hemisphere) {
+void ScaleDuet_Start(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ScaleDuet_Controller(int hemisphere, bool forwarding) {
+void ScaleDuet_Controller(bool hemisphere, bool forwarding) {
     ScaleDuet_instance[hemisphere].BaseController(forwarding);
 }
 
-void ScaleDuet_View(int hemisphere) {
+void ScaleDuet_View(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseView();
 }
 
-void ScaleDuet_Screensaver(int hemisphere) {
+void ScaleDuet_Screensaver(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseScreensaverView();
 }
 
-void ScaleDuet_OnButtonPress(int hemisphere) {
+void ScaleDuet_OnButtonPress(bool hemisphere) {
     ScaleDuet_instance[hemisphere].OnButtonPress();
 }
 
-void ScaleDuet_OnEncoderMove(int hemisphere, int direction) {
+void ScaleDuet_OnEncoderMove(bool hemisphere, int direction) {
     ScaleDuet_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ScaleDuet_ToggleHelpScreen(int hemisphere) {
+void ScaleDuet_ToggleHelpScreen(bool hemisphere) {
     ScaleDuet_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ScaleDuet_OnDataRequest(int hemisphere) {
+uint32_t ScaleDuet_OnDataRequest(bool hemisphere) {
     return ScaleDuet_instance[hemisphere].OnDataRequest();
 }
 
-void ScaleDuet_OnDataReceive(int hemisphere, uint32_t data) {
+void ScaleDuet_OnDataReceive(bool hemisphere, uint32_t data) {
     ScaleDuet_instance[hemisphere].OnDataReceive(data);
 }

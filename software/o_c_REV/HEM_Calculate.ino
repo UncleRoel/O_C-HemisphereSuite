@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 // Arithmetic functions and typedef to function pointer
 #define HEMISPHERE_NUMBER_OF_CALC 7
 int hem_MIN(int v1, int v2) {return (v1 < v2) ? v1 : v2;}
@@ -130,38 +150,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Calculate Calculate_instance[2];
 
-void Calculate_Start(int hemisphere) {
+void Calculate_Start(bool hemisphere) {
     Calculate_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Calculate_Controller(int hemisphere, bool forwarding) {
+void Calculate_Controller(bool hemisphere, bool forwarding) {
     Calculate_instance[hemisphere].BaseController(forwarding);
 }
 
-void Calculate_View(int hemisphere) {
+void Calculate_View(bool hemisphere) {
     Calculate_instance[hemisphere].BaseView();
 }
 
-void Calculate_Screensaver(int hemisphere) {
+void Calculate_Screensaver(bool hemisphere) {
     Calculate_instance[hemisphere].BaseScreensaverView();
 }
 
-void Calculate_OnButtonPress(int hemisphere) {
+void Calculate_OnButtonPress(bool hemisphere) {
     Calculate_instance[hemisphere].OnButtonPress();
 }
 
-void Calculate_OnEncoderMove(int hemisphere, int direction) {
+void Calculate_OnEncoderMove(bool hemisphere, int direction) {
     Calculate_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Calculate_ToggleHelpScreen(int hemisphere) {
+void Calculate_ToggleHelpScreen(bool hemisphere) {
     Calculate_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Calculate_OnDataRequest(int hemisphere) {
+uint32_t Calculate_OnDataRequest(bool hemisphere) {
     return Calculate_instance[hemisphere].OnDataRequest();
 }
 
-void Calculate_OnDataReceive(int hemisphere, uint32_t data) {
+void Calculate_OnDataReceive(bool hemisphere, uint32_t data) {
     Calculate_instance[hemisphere].OnDataReceive(data);
 }

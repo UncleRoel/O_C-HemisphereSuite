@@ -7,6 +7,27 @@
 // (5) Add a declare line in hemisphere_config.h, which looks like this:
 //     DECLARE_APPLET(id, categories, ClassName), \
 // (6) Increment HEMISPHERE_AVAILABLE_APPLETS in hemisphere_config.h
+// (7) Add your name and any additional copyright info to the block below
+
+// Copyright (c) 2018, __________
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 class ClassName : public HemisphereApplet {
 public:
@@ -76,38 +97,12 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ClassName ClassName_instance[2];
 
-void ClassName_Start(int hemisphere) {
-    ClassName_instance[hemisphere].BaseStart(hemisphere);
-}
-
-void ClassName_Controller(int hemisphere, bool forwarding) {
-    ClassName_instance[hemisphere].BaseController(forwarding);
-}
-
-void ClassName_View(int hemisphere) {
-    ClassName_instance[hemisphere].BaseView();
-}
-
-void ClassName_Screensaver(int hemisphere) {
-    ClassName_instance[hemisphere].BaseScreensaverView();
-}
-
-void ClassName_OnButtonPress(int hemisphere) {
-    ClassName_instance[hemisphere].OnButtonPress();
-}
-
-void ClassName_OnEncoderMove(int hemisphere, int direction) {
-    ClassName_instance[hemisphere].OnEncoderMove(direction);
-}
-
-void ClassName_ToggleHelpScreen(int hemisphere) {
-    ClassName_instance[hemisphere].HelpScreen();
-}
-
-uint32_t ClassName_OnDataRequest(int hemisphere) {
-    return ClassName_instance[hemisphere].OnDataRequest();
-}
-
-void ClassName_OnDataReceive(int hemisphere, uint32_t data) {
-    ClassName_instance[hemisphere].OnDataReceive(data);
-}
+void ClassName_Start(bool hemisphere) {ClassName_instance[hemisphere].BaseStart(hemisphere);}
+void ClassName_Controller(bool hemisphere, bool forwarding) {ClassName_instance[hemisphere].BaseController(forwarding);}
+void ClassName_View(bool hemisphere) {ClassName_instance[hemisphere].BaseView();}
+void ClassName_Screensaver(bool hemisphere) {ClassName_instance[hemisphere].BaseScreensaverView();}
+void ClassName_OnButtonPress(bool hemisphere) {ClassName_instance[hemisphere].OnButtonPress();}
+void ClassName_OnEncoderMove(bool hemisphere, int direction) {ClassName_instance[hemisphere].OnEncoderMove(direction);}
+void ClassName_ToggleHelpScreen(bool hemisphere) {ClassName_instance[hemisphere].HelpScreen();}
+uint32_t ClassName_OnDataRequest(bool hemisphere) {return ClassName_instance[hemisphere].OnDataRequest();}
+void ClassName_OnDataReceive(bool hemisphere, uint32_t data) {ClassName_instance[hemisphere].OnDataReceive(data);}

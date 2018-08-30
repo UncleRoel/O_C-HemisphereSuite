@@ -1,8 +1,24 @@
-// See https://www.pjrc.com/teensy/td_midi.html
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
+// See https://www.pjrc.com/teensy/td_midi.html
 
 // The functions available for each output
 #define HEM_MIDI_CC_IN 0
@@ -18,8 +34,6 @@ public:
     }
 
     void Start() {
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         channel = 0; // Default channel 1
         last_channel = 0;
         function = 0;
@@ -44,9 +58,7 @@ public:
         bool note_on = EndOfADCLag(); // If the ADC lag has ended, a note will always be sent
         if (note_on || legato_on) {
             // Get a new reading when gated, or when checking for legato changes
-            quantizer.Process(In(0), 0, 0);
-            uint8_t midi_note = quantizer.NoteNumber() + transpose - 4;
-            midi_note = constrain(midi_note, 0, 127);
+            uint8_t midi_note = MIDIQuantizer::NoteNumber(In(0), transpose);
 
             if (legato_on && midi_note != last_note) {
                 // Send note off if the note has changed
@@ -167,9 +179,6 @@ protected:
     }
     
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Settings
     int channel; // MIDI Out channel
     int function; // Function of B/D output
@@ -295,38 +304,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 hMIDIOut hMIDIOut_instance[2];
 
-void hMIDIOut_Start(int hemisphere) {
+void hMIDIOut_Start(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void hMIDIOut_Controller(int hemisphere, bool forwarding) {
+void hMIDIOut_Controller(bool hemisphere, bool forwarding) {
     hMIDIOut_instance[hemisphere].BaseController(forwarding);
 }
 
-void hMIDIOut_View(int hemisphere) {
+void hMIDIOut_View(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseView();
 }
 
-void hMIDIOut_Screensaver(int hemisphere) {
+void hMIDIOut_Screensaver(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseScreensaverView();
 }
 
-void hMIDIOut_OnButtonPress(int hemisphere) {
+void hMIDIOut_OnButtonPress(bool hemisphere) {
     hMIDIOut_instance[hemisphere].OnButtonPress();
 }
 
-void hMIDIOut_OnEncoderMove(int hemisphere, int direction) {
+void hMIDIOut_OnEncoderMove(bool hemisphere, int direction) {
     hMIDIOut_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void hMIDIOut_ToggleHelpScreen(int hemisphere) {
+void hMIDIOut_ToggleHelpScreen(bool hemisphere) {
     hMIDIOut_instance[hemisphere].HelpScreen();
 }
 
-uint32_t hMIDIOut_OnDataRequest(int hemisphere) {
+uint32_t hMIDIOut_OnDataRequest(bool hemisphere) {
     return hMIDIOut_instance[hemisphere].OnDataRequest();
 }
 
-void hMIDIOut_OnDataReceive(int hemisphere, uint32_t data) {
+void hMIDIOut_OnDataReceive(bool hemisphere, uint32_t data) {
     hMIDIOut_instance[hemisphere].OnDataReceive(data);
 }

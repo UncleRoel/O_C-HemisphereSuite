@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define TRENDING_MAX_SENS 124
 
 const char* const Trending_assignments[6] = {
@@ -164,38 +184,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Trending Trending_instance[2];
 
-void Trending_Start(int hemisphere) {
+void Trending_Start(bool hemisphere) {
     Trending_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Trending_Controller(int hemisphere, bool forwarding) {
+void Trending_Controller(bool hemisphere, bool forwarding) {
     Trending_instance[hemisphere].BaseController(forwarding);
 }
 
-void Trending_View(int hemisphere) {
+void Trending_View(bool hemisphere) {
     Trending_instance[hemisphere].BaseView();
 }
 
-void Trending_Screensaver(int hemisphere) {
+void Trending_Screensaver(bool hemisphere) {
     Trending_instance[hemisphere].BaseScreensaverView();
 }
 
-void Trending_OnButtonPress(int hemisphere) {
+void Trending_OnButtonPress(bool hemisphere) {
     Trending_instance[hemisphere].OnButtonPress();
 }
 
-void Trending_OnEncoderMove(int hemisphere, int direction) {
+void Trending_OnEncoderMove(bool hemisphere, int direction) {
     Trending_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Trending_ToggleHelpScreen(int hemisphere) {
+void Trending_ToggleHelpScreen(bool hemisphere) {
     Trending_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Trending_OnDataRequest(int hemisphere) {
+uint32_t Trending_OnDataRequest(bool hemisphere) {
     return Trending_instance[hemisphere].OnDataRequest();
 }
 
-void Trending_OnDataReceive(int hemisphere, uint32_t data) {
+void Trending_OnDataReceive(bool hemisphere, uint32_t data) {
     Trending_instance[hemisphere].OnDataReceive(data);
 }

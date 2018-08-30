@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class TrigSeq16 : public HemisphereApplet {
 public:
 
@@ -19,12 +39,13 @@ public:
         if (Clock(1)) step = 0;
 
         if (Clock(0)) {
+            bool swap = In(0) >= HEMISPHERE_3V_CV;
             if (step < 8) {
-                if ((pattern[0] >> step) & 0x01) ClockOut(0);
-                else ClockOut(1);
+                if ((pattern[0] >> step) & 0x01) ClockOut(swap ? 1 : 0);
+                else ClockOut(swap ? 0 : 1);
             } else {
-                if ((pattern[1] >> (step - 8)) & 0x01) ClockOut(0);
-                else ClockOut(1);
+                if ((pattern[1] >> (step - 8)) & 0x01) ClockOut(swap ? 1 : 0);
+                else ClockOut(swap ? 0 : 1);
             }
             step++;
             if (step > end_step) step = 0;
@@ -86,7 +107,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "1=Swap A&B @ 3V";
         help[HEMISPHERE_HELP_OUTS]     = "Trg A=Trg B=Cmp";
         help[HEMISPHERE_HELP_ENCODER]  = "T=Set P=Select";
         //                               "------------------" <-- Size Guide
@@ -157,38 +178,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 TrigSeq16 TrigSeq16_instance[2];
 
-void TrigSeq16_Start(int hemisphere) {
+void TrigSeq16_Start(bool hemisphere) {
     TrigSeq16_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void TrigSeq16_Controller(int hemisphere, bool forwarding) {
+void TrigSeq16_Controller(bool hemisphere, bool forwarding) {
     TrigSeq16_instance[hemisphere].BaseController(forwarding);
 }
 
-void TrigSeq16_View(int hemisphere) {
+void TrigSeq16_View(bool hemisphere) {
     TrigSeq16_instance[hemisphere].BaseView();
 }
 
-void TrigSeq16_Screensaver(int hemisphere) {
+void TrigSeq16_Screensaver(bool hemisphere) {
     TrigSeq16_instance[hemisphere].BaseScreensaverView();
 }
 
-void TrigSeq16_OnButtonPress(int hemisphere) {
+void TrigSeq16_OnButtonPress(bool hemisphere) {
     TrigSeq16_instance[hemisphere].OnButtonPress();
 }
 
-void TrigSeq16_OnEncoderMove(int hemisphere, int direction) {
+void TrigSeq16_OnEncoderMove(bool hemisphere, int direction) {
     TrigSeq16_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void TrigSeq16_ToggleHelpScreen(int hemisphere) {
+void TrigSeq16_ToggleHelpScreen(bool hemisphere) {
     TrigSeq16_instance[hemisphere].HelpScreen();
 }
 
-uint32_t TrigSeq16_OnDataRequest(int hemisphere) {
+uint32_t TrigSeq16_OnDataRequest(bool hemisphere) {
     return TrigSeq16_instance[hemisphere].OnDataRequest();
 }
 
-void TrigSeq16_OnDataReceive(int hemisphere, uint32_t data) {
+void TrigSeq16_OnDataReceive(bool hemisphere, uint32_t data) {
     TrigSeq16_instance[hemisphere].OnDataReceive(data);
 }

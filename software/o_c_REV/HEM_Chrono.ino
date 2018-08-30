@@ -208,38 +208,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Chrono Chrono_instance[2];
 
-void Chrono_Start(int hemisphere) {
+void Chrono_Start(bool hemisphere) {
     Chrono_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Chrono_Controller(int hemisphere, bool forwarding) {
+void Chrono_Controller(bool hemisphere, bool forwarding) {
     Chrono_instance[hemisphere].BaseController(forwarding);
 }
 
-void Chrono_View(int hemisphere) {
+void Chrono_View(bool hemisphere) {
     Chrono_instance[hemisphere].BaseView();
 }
 
-void Chrono_Screensaver(int hemisphere) {
+void Chrono_Screensaver(bool hemisphere) {
     Chrono_instance[hemisphere].BaseScreensaverView();
 }
 
-void Chrono_OnButtonPress(int hemisphere) {
+void Chrono_OnButtonPress(bool hemisphere) {
     Chrono_instance[hemisphere].OnButtonPress();
 }
 
-void Chrono_OnEncoderMove(int hemisphere, int direction) {
+void Chrono_OnEncoderMove(bool hemisphere, int direction) {
     Chrono_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Chrono_ToggleHelpScreen(int hemisphere) {
+void Chrono_ToggleHelpScreen(bool hemisphere) {
     Chrono_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Chrono_OnDataRequest(int hemisphere) {
+uint32_t Chrono_OnDataRequest(bool hemisphere) {
     return Chrono_instance[hemisphere].OnDataRequest();
 }
 
-void Chrono_OnDataReceive(int hemisphere, uint32_t data) {
+void Chrono_OnDataReceive(bool hemisphere, uint32_t data) {
     Chrono_instance[hemisphere].OnDataReceive(data);
 }

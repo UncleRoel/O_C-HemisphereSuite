@@ -1,5 +1,29 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Port of subset of Low Rents Copyright (c) 2016 Patrick Dowling,
+// Copyright (c) 2014 Olivier Gillet, Copyright (c) 2016 Tim Churches
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "streams_lorenz_generator.h"
 #include "util/util_math.h"
+#include "HSLorenzGeneratorManager.h" // Singleton Lorenz manager
 
 class LowerRenz : public HemisphereApplet {
 public:
@@ -11,30 +35,26 @@ public:
     void Start() {
         freq = 128;
         rho = 64;
-        lorenz.Init(0);
-        lorenz.Init(1);
     }
 
     void Controller() {
         if (!Gate(1)) { // Freeze if gated
-            bool reset = Clock(0);
             int freq_cv = Proportion(In(0), HEMISPHERE_MAX_CV, 63);
             int rho_cv = Proportion(In(1), HEMISPHERE_MAX_CV, 31);
 
+            int32_t freq_h = SCALE8_16(constrain(freq + freq_cv, 0, 255));
+            freq_h = USAT16(freq_h);
+            lorenz_m->SetFreq(hemisphere, freq_h);
 
-            int32_t freq1 = SCALE8_16(constrain(freq + freq_cv, 0, 255));
-            freq1 = USAT16(freq1);
+            int32_t rho_h = SCALE8_16(constrain(rho + rho_cv, 4, 127));
+            lorenz_m->SetRho(hemisphere, USAT16(rho_h));
 
-            int32_t rho1 = SCALE8_16(constrain(rho + rho_cv, 4, 127));
-            lorenz.set_rho1(USAT16(rho1));
-
-            lorenz.set_out_a(0); // X
-            lorenz.set_out_b(1); // Y
-            lorenz.Process(freq1, 0, reset, 0, 2, 2);
+            if (Clock(0)) lorenz_m->Reset(hemisphere);
+            lorenz_m->Process();
 
             // The scaling here is based on observation of the value range
-            int x = Proportion(lorenz.dac_code(0) - 17000, 25000, HEMISPHERE_MAX_CV);
-            int y = Proportion(lorenz.dac_code(1) - 17000, 25000, HEMISPHERE_MAX_CV);
+            int x = Proportion(lorenz_m->GetOut(0 + (hemisphere * 2)) - 17000, 25000, HEMISPHERE_MAX_CV);
+            int y = Proportion(lorenz_m->GetOut(1 + (hemisphere * 2)) - 17000, 25000, HEMISPHERE_MAX_CV);
 
             Out(0, x);
             Out(1, y);
@@ -84,7 +104,7 @@ protected:
     }
     
 private:
-    streams::LorenzGenerator lorenz;
+    LorenzGeneratorManager *lorenz_m = lorenz_m->get();
     int freq;
     int rho;
     int cursor; // 0 = Frequency, 1 = Rho
@@ -122,38 +142,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 LowerRenz LowerRenz_instance[2];
 
-void LowerRenz_Start(int hemisphere) {
+void LowerRenz_Start(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void LowerRenz_Controller(int hemisphere, bool forwarding) {
+void LowerRenz_Controller(bool hemisphere, bool forwarding) {
     LowerRenz_instance[hemisphere].BaseController(forwarding);
 }
 
-void LowerRenz_View(int hemisphere) {
+void LowerRenz_View(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseView();
 }
 
-void LowerRenz_Screensaver(int hemisphere) {
+void LowerRenz_Screensaver(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseScreensaverView();
 }
 
-void LowerRenz_OnButtonPress(int hemisphere) {
+void LowerRenz_OnButtonPress(bool hemisphere) {
     LowerRenz_instance[hemisphere].OnButtonPress();
 }
 
-void LowerRenz_OnEncoderMove(int hemisphere, int direction) {
+void LowerRenz_OnEncoderMove(bool hemisphere, int direction) {
     LowerRenz_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void LowerRenz_ToggleHelpScreen(int hemisphere) {
+void LowerRenz_ToggleHelpScreen(bool hemisphere) {
     LowerRenz_instance[hemisphere].HelpScreen();
 }
 
-uint32_t LowerRenz_OnDataRequest(int hemisphere) {
+uint32_t LowerRenz_OnDataRequest(bool hemisphere) {
     return LowerRenz_instance[hemisphere].OnDataRequest();
 }
 
-void LowerRenz_OnDataReceive(int hemisphere, uint32_t data) {
+void LowerRenz_OnDataReceive(bool hemisphere, uint32_t data) {
     LowerRenz_instance[hemisphere].OnDataReceive(data);
 }

@@ -1,5 +1,25 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define HEM_ADEG_MAX_VALUE 255
-#define HEM_ADEG_MAX_TICKS 32000
+#define HEM_ADEG_MAX_TICKS 33333
 
 class ADEG : public HemisphereApplet {
 public:
@@ -161,38 +181,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ADEG ADEG_instance[2];
 
-void ADEG_Start(int hemisphere) {
+void ADEG_Start(bool hemisphere) {
     ADEG_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ADEG_Controller(int hemisphere, bool forwarding) {
+void ADEG_Controller(bool hemisphere, bool forwarding) {
     ADEG_instance[hemisphere].BaseController(forwarding);
 }
 
-void ADEG_View(int hemisphere) {
+void ADEG_View(bool hemisphere) {
     ADEG_instance[hemisphere].BaseView();
 }
 
-void ADEG_Screensaver(int hemisphere) {
+void ADEG_Screensaver(bool hemisphere) {
     ADEG_instance[hemisphere].BaseScreensaverView();
 }
 
-void ADEG_OnButtonPress(int hemisphere) {
+void ADEG_OnButtonPress(bool hemisphere) {
     ADEG_instance[hemisphere].OnButtonPress();
 }
 
-void ADEG_OnEncoderMove(int hemisphere, int direction) {
+void ADEG_OnEncoderMove(bool hemisphere, int direction) {
     ADEG_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ADEG_ToggleHelpScreen(int hemisphere) {
+void ADEG_ToggleHelpScreen(bool hemisphere) {
     ADEG_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ADEG_OnDataRequest(int hemisphere) {
+uint32_t ADEG_OnDataRequest(bool hemisphere) {
     return ADEG_instance[hemisphere].OnDataRequest();
 }
 
-void ADEG_OnDataReceive(int hemisphere, uint32_t data) {
+void ADEG_OnDataReceive(bool hemisphere, uint32_t data) {
     ADEG_instance[hemisphere].OnDataReceive(data);
 }

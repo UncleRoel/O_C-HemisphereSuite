@@ -190,38 +190,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 BigBen BigBen_instance[2];
 
-void BigBen_Start(int hemisphere) {
+void BigBen_Start(bool hemisphere) {
     BigBen_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void BigBen_Controller(int hemisphere, bool forwarding) {
+void BigBen_Controller(bool hemisphere, bool forwarding) {
     BigBen_instance[hemisphere].BaseController(forwarding);
 }
 
-void BigBen_View(int hemisphere) {
+void BigBen_View(bool hemisphere) {
     BigBen_instance[hemisphere].BaseView();
 }
 
-void BigBen_Screensaver(int hemisphere) {
+void BigBen_Screensaver(bool hemisphere) {
     BigBen_instance[hemisphere].BaseScreensaverView();
 }
 
-void BigBen_OnButtonPress(int hemisphere) {
+void BigBen_OnButtonPress(bool hemisphere) {
     BigBen_instance[hemisphere].OnButtonPress();
 }
 
-void BigBen_OnEncoderMove(int hemisphere, int direction) {
+void BigBen_OnEncoderMove(bool hemisphere, int direction) {
     BigBen_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void BigBen_ToggleHelpScreen(int hemisphere) {
+void BigBen_ToggleHelpScreen(bool hemisphere) {
     BigBen_instance[hemisphere].HelpScreen();
 }
 
-uint32_t BigBen_OnDataRequest(int hemisphere) {
+uint32_t BigBen_OnDataRequest(bool hemisphere) {
     return BigBen_instance[hemisphere].OnDataRequest();
 }
 
-void BigBen_OnDataReceive(int hemisphere, uint32_t data) {
+void BigBen_OnDataReceive(bool hemisphere, uint32_t data) {
     BigBen_instance[hemisphere].OnDataReceive(data);
 }

@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class CVRec : public HemisphereApplet {
 public:
 
@@ -17,7 +37,12 @@ public:
 
         if (Clock(0)) {
             if (record) {
-                ForEachChannel(ch) sequence[step + (ch * 64)] = In(ch);
+                ForEachChannel(ch)
+                {
+                    int cv = In(ch);
+                    cv = constrain(cv, 0, HEMISPHERE_MAX_CV);
+                    sequence[step + (ch * 64)] = cv;
+                }
                 if (--punch_in == 0) record = 0;
             }
             ForEachChannel(ch) Out(ch, sequence[step + (ch * 64)]);
@@ -72,8 +97,8 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "1=Tr1 2=Tr2";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Tr1 B=Tr2";
+        help[HEMISPHERE_HELP_CVS]      = "1=Track1 2=Trk2";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Trk1 B=Trk2";
         help[HEMISPHERE_HELP_ENCODER]  = "T=Length P=Record";
         //                               "------------------" <-- Size Guide
     }
@@ -149,38 +174,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 CVRec CVRec_instance[2];
 
-void CVRec_Start(int hemisphere) {
+void CVRec_Start(bool hemisphere) {
     CVRec_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void CVRec_Controller(int hemisphere, bool forwarding) {
+void CVRec_Controller(bool hemisphere, bool forwarding) {
     CVRec_instance[hemisphere].BaseController(forwarding);
 }
 
-void CVRec_View(int hemisphere) {
+void CVRec_View(bool hemisphere) {
     CVRec_instance[hemisphere].BaseView();
 }
 
-void CVRec_Screensaver(int hemisphere) {
+void CVRec_Screensaver(bool hemisphere) {
     CVRec_instance[hemisphere].BaseScreensaverView();
 }
 
-void CVRec_OnButtonPress(int hemisphere) {
+void CVRec_OnButtonPress(bool hemisphere) {
     CVRec_instance[hemisphere].OnButtonPress();
 }
 
-void CVRec_OnEncoderMove(int hemisphere, int direction) {
+void CVRec_OnEncoderMove(bool hemisphere, int direction) {
     CVRec_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void CVRec_ToggleHelpScreen(int hemisphere) {
+void CVRec_ToggleHelpScreen(bool hemisphere) {
     CVRec_instance[hemisphere].HelpScreen();
 }
 
-uint32_t CVRec_OnDataRequest(int hemisphere) {
+uint32_t CVRec_OnDataRequest(bool hemisphere) {
     return CVRec_instance[hemisphere].OnDataRequest();
 }
 
-void CVRec_OnDataReceive(int hemisphere, uint32_t data) {
+void CVRec_OnDataReceive(bool hemisphere, uint32_t data) {
     CVRec_instance[hemisphere].OnDataReceive(data);
 }

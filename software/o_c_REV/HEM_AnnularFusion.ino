@@ -1,3 +1,25 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Bjorklund pattern filter, Copyright (c) 2016 Tim Churches
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "bjorklund.h"
 
 struct AFStepCoord {
@@ -146,13 +168,13 @@ private:
 
         // Length cursor
         gfxBitmap(1, 15, 8, METER_ICON);
-        gfxPrint(9, 15, length[ch]);
-        if (f == 0) gfxCursor(1, 23, 20);
+        gfxPrint(12 + pad(10, length[ch]), 15, length[ch]);
+        if (f == 0) gfxCursor(13, 23, 12);
 
         // Beats cursor
         gfxBitmap(1, 25, 8, X_NOTE_ICON);
-        gfxPrint(9, 25, beats[ch]);
-        if (f == 1) gfxCursor(1, 33, 20);
+        gfxPrint(12 + pad(10, beats[ch]), 25, beats[ch]);
+        if (f == 1) gfxCursor(13, 33, 12);
 
         // Ring indicator
         gfxCircle(8, 52, 8);
@@ -226,38 +248,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 AnnularFusion AnnularFusion_instance[2];
 
-void AnnularFusion_Start(int hemisphere) {
+void AnnularFusion_Start(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void AnnularFusion_Controller(int hemisphere, bool forwarding) {
+void AnnularFusion_Controller(bool hemisphere, bool forwarding) {
     AnnularFusion_instance[hemisphere].BaseController(forwarding);
 }
 
-void AnnularFusion_View(int hemisphere) {
+void AnnularFusion_View(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseView();
 }
 
-void AnnularFusion_Screensaver(int hemisphere) {
+void AnnularFusion_Screensaver(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseScreensaverView();
 }
 
-void AnnularFusion_OnButtonPress(int hemisphere) {
+void AnnularFusion_OnButtonPress(bool hemisphere) {
     AnnularFusion_instance[hemisphere].OnButtonPress();
 }
 
-void AnnularFusion_OnEncoderMove(int hemisphere, int direction) {
+void AnnularFusion_OnEncoderMove(bool hemisphere, int direction) {
     AnnularFusion_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void AnnularFusion_ToggleHelpScreen(int hemisphere) {
+void AnnularFusion_ToggleHelpScreen(bool hemisphere) {
     AnnularFusion_instance[hemisphere].HelpScreen();
 }
 
-uint32_t AnnularFusion_OnDataRequest(int hemisphere) {
+uint32_t AnnularFusion_OnDataRequest(bool hemisphere) {
     return AnnularFusion_instance[hemisphere].OnDataRequest();
 }
 
-void AnnularFusion_OnDataReceive(int hemisphere, uint32_t data) {
+void AnnularFusion_OnDataReceive(bool hemisphere, uint32_t data) {
     AnnularFusion_instance[hemisphere].OnDataReceive(data);
 }

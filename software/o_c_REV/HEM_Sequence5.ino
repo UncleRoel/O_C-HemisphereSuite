@@ -1,3 +1,25 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Based on Braids Quantizer, Copyright 2015 Olivier Gillet.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
@@ -22,19 +44,23 @@ public:
             ClockOut(1);
         }
 
-        int transpose = Proportion(In(0), HEMISPHERE_MAX_CV / 2, 12);
-        transpose = constrain(transpose, -12, 12);
+        int transpose = 0;
+        if (DetentedIn(0)) {
+            transpose = In(0) / 128; // 128 ADC steps per semitone
+        }
+        int play_note = note[step] + 48 + transpose;
+        play_note = constrain(play_note, 0, 127);
 
         if (Clock(0)) StartADCLag();
 
         if (EndOfADCLag()) {
-            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
+            Out(0, quantizer.Lookup(play_note));
             Advance(step);
             if (step == 0) ClockOut(1);
         }
 
         if (play) {
-            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
+            Out(0, quantizer.Lookup(play_note));
         }
     }
 
@@ -143,38 +169,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Sequence5 Sequence5_instance[2];
 
-void Sequence5_Start(int hemisphere) {
+void Sequence5_Start(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Sequence5_Controller(int hemisphere, bool forwarding) {
+void Sequence5_Controller(bool hemisphere, bool forwarding) {
     Sequence5_instance[hemisphere].BaseController(forwarding);
 }
 
-void Sequence5_View(int hemisphere) {
+void Sequence5_View(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseView();
 }
 
-void Sequence5_Screensaver(int hemisphere) {
+void Sequence5_Screensaver(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseScreensaverView();
 }
 
-void Sequence5_OnButtonPress(int hemisphere) {
+void Sequence5_OnButtonPress(bool hemisphere) {
     Sequence5_instance[hemisphere].OnButtonPress();
 }
 
-void Sequence5_OnEncoderMove(int hemisphere, int direction) {
+void Sequence5_OnEncoderMove(bool hemisphere, int direction) {
     Sequence5_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Sequence5_ToggleHelpScreen(int hemisphere) {
+void Sequence5_ToggleHelpScreen(bool hemisphere) {
     Sequence5_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Sequence5_OnDataRequest(int hemisphere) {
+uint32_t Sequence5_OnDataRequest(bool hemisphere) {
     return Sequence5_instance[hemisphere].OnDataRequest();
 }
 
-void Sequence5_OnDataReceive(int hemisphere, uint32_t data) {
+void Sequence5_OnDataReceive(bool hemisphere, uint32_t data) {
     Sequence5_instance[hemisphere].OnDataReceive(data);
 }

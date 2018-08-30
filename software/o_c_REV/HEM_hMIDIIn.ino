@@ -1,8 +1,24 @@
-// See https://www.pjrc.com/teensy/td_midi.html
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
+// See https://www.pjrc.com/teensy/td_midi.html
 
 #define HEM_MIDI_NOTE_ON 1
 #define HEM_MIDI_NOTE_OFF 0
@@ -34,8 +50,6 @@ public:
     }
 
     void Start() {
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         first_note = -1;
         channel = 0; // Default channel 1
 
@@ -71,7 +85,7 @@ public:
                     ForEachChannel(ch)
                     {
                         if (function[ch] == HEM_MIDI_NOTE_OUT)
-                            Out(ch, quantizer.Lookup(data1));
+                            Out(ch, MIDIQuantizer::CV(data1));
 
                         if (function[ch] == HEM_MIDI_TRIG_OUT)
                             ClockOut(ch);
@@ -189,9 +203,6 @@ protected:
     }
     
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Settings
     int channel; // MIDI channel number
     int function[2]; // Function for each channel
@@ -297,38 +308,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 hMIDIIn hMIDIIn_instance[2];
 
-void hMIDIIn_Start(int hemisphere) {
+void hMIDIIn_Start(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void hMIDIIn_Controller(int hemisphere, bool forwarding) {
+void hMIDIIn_Controller(bool hemisphere, bool forwarding) {
     hMIDIIn_instance[hemisphere].BaseController(forwarding);
 }
 
-void hMIDIIn_View(int hemisphere) {
+void hMIDIIn_View(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseView();
 }
 
-void hMIDIIn_Screensaver(int hemisphere) {
+void hMIDIIn_Screensaver(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseScreensaverView();
 }
 
-void hMIDIIn_OnButtonPress(int hemisphere) {
+void hMIDIIn_OnButtonPress(bool hemisphere) {
     hMIDIIn_instance[hemisphere].OnButtonPress();
 }
 
-void hMIDIIn_OnEncoderMove(int hemisphere, int direction) {
+void hMIDIIn_OnEncoderMove(bool hemisphere, int direction) {
     hMIDIIn_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void hMIDIIn_ToggleHelpScreen(int hemisphere) {
+void hMIDIIn_ToggleHelpScreen(bool hemisphere) {
     hMIDIIn_instance[hemisphere].HelpScreen();
 }
 
-uint32_t hMIDIIn_OnDataRequest(int hemisphere) {
+uint32_t hMIDIIn_OnDataRequest(bool hemisphere) {
     return hMIDIIn_instance[hemisphere].OnDataRequest();
 }
 
-void hMIDIIn_OnDataReceive(int hemisphere, uint32_t data) {
+void hMIDIIn_OnDataReceive(bool hemisphere, uint32_t data) {
     hMIDIIn_instance[hemisphere].OnDataReceive(data);
 }

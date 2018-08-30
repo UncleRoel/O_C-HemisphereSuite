@@ -228,38 +228,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 PedalTool PedalTool_instance[2];
 
-void PedalTool_Start(int hemisphere) {
+void PedalTool_Start(bool hemisphere) {
     PedalTool_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void PedalTool_Controller(int hemisphere, bool forwarding) {
+void PedalTool_Controller(bool hemisphere, bool forwarding) {
     PedalTool_instance[hemisphere].BaseController(forwarding);
 }
 
-void PedalTool_View(int hemisphere) {
+void PedalTool_View(bool hemisphere) {
     PedalTool_instance[hemisphere].BaseView();
 }
 
-void PedalTool_Screensaver(int hemisphere) {
+void PedalTool_Screensaver(bool hemisphere) {
     PedalTool_instance[hemisphere].BaseScreensaverView();
 }
 
-void PedalTool_OnButtonPress(int hemisphere) {
+void PedalTool_OnButtonPress(bool hemisphere) {
     PedalTool_instance[hemisphere].OnButtonPress();
 }
 
-void PedalTool_OnEncoderMove(int hemisphere, int direction) {
+void PedalTool_OnEncoderMove(bool hemisphere, int direction) {
     PedalTool_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void PedalTool_ToggleHelpScreen(int hemisphere) {
+void PedalTool_ToggleHelpScreen(bool hemisphere) {
     PedalTool_instance[hemisphere].HelpScreen();
 }
 
-uint32_t PedalTool_OnDataRequest(int hemisphere) {
+uint32_t PedalTool_OnDataRequest(bool hemisphere) {
     return PedalTool_instance[hemisphere].OnDataRequest();
 }
 
-void PedalTool_OnDataReceive(int hemisphere, uint32_t data) {
+void PedalTool_OnDataReceive(bool hemisphere, uint32_t data) {
     PedalTool_instance[hemisphere].OnDataReceive(data);
 }

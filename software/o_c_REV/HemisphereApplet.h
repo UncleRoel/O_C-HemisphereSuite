@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Base Class
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,9 +49,11 @@ typedef int32_t simfloat;
 #define ForEachChannel(ch) for(int ch = 0; ch < 2; ch++)
 
 // Icons
+#ifndef HS_ICON_SET
+#define HS_ICON_SET
 const uint8_t CHECK_ICON[8]      = {0x00, 0xf0, 0x40, 0x20, 0x10, 0x08, 0x04, 0x00};
 const uint8_t X_NOTE_ICON[8]     = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
-const uint8_t METER_ICON[8]      = {0x7e, 0x10, 0x1c, 0x10, 0x1c, 0x10, 0x7e, 0x00};
+const uint8_t METER_ICON[8]      = {0x00, 0xff, 0x00, 0xfc, 0x00, 0xff, 0x00, 0xfc};
 const uint8_t NOTE_ICON[8]       = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
 const uint8_t CLOCK_ICON[8]      = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 const uint8_t MOD_ICON[8]        = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
@@ -39,6 +61,10 @@ const uint8_t BEND_ICON[8]       = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x
 const uint8_t AFTERTOUCH_ICON[8] = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
 const uint8_t MIDI_ICON[8]       = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
 const uint8_t CV_ICON[8]         = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
+const uint8_t SCALE_ICON[8]      = {0x81, 0x7f, 0x9f, 0x81, 0x7f, 0x9f, 0x81, 0x7f};
+const uint8_t LOCK_ICON[8]       = {0x00, 0xf8, 0xfe, 0xf9, 0x89, 0xf9, 0xfe, 0xf8};
+const uint8_t FAVORITE_ICON[8]   = {0x0e, 0x15, 0x31, 0x62, 0x62, 0x31, 0x15, 0x0e};
+#endif // HS_ICON_SET
 
 // Specifies where data goes in flash storage for each selcted applet, and how big it is
 typedef struct PackLocation {
@@ -55,10 +81,10 @@ public:
     virtual void View();
     virtual void ScreensaverView();
 
-    void BaseStart(int h) {
-        hemisphere = h;
-        gfx_offset = h * 64;
-        io_offset = h * 2;
+    void BaseStart(bool hemisphere_) {
+        hemisphere = hemisphere_;
+        gfx_offset = hemisphere * 64;
+        io_offset = hemisphere * 2;
         screensaver_on = 0;
 
         // Initialize some things for startup
@@ -72,10 +98,16 @@ public:
         help_active = 0;
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
 
+        // Shutdown FTM capture on Digital 4, used by Tuner
+        if (hemisphere == 1) {
+            FreqMeasure.end();
+            OC::DigitalInputs::reInit();
+        }
+
         // Maintain previous app state by skipping Start
         if (!applet_started) {
-            Start();
             applet_started = true;
+            Start();
         }
     }
 
@@ -162,6 +194,10 @@ public:
         if (CursorBlink()) gfxLine(x, y, x + w - 1, y);
     }
 
+    void gfxPos(int x, int y) {
+        graphics.setPrintPos(x + gfx_offset, y);
+    }
+
     void gfxPrint(int x, int y, const char *str) {
         graphics.setPrintPos(x + gfx_offset, y);
         graphics.print(str);
@@ -172,12 +208,32 @@ public:
         graphics.print(num);
     }
 
+    void gfxPrint(int x_adv, int num) { // Print number with character padding
+        for (int c = 0; c < (x_adv / 6); c++) gfxPrint(" ");
+        gfxPrint(num);
+    }
+
     void gfxPrint(const char *str) {
         graphics.print(str);
     }
 
     void gfxPrint(int num) {
         graphics.print(num);
+    }
+
+    /* Convert CV value to voltage level and print  to two decimal places */
+    void gfxPrintVoltage(int cv) {
+        int v = (cv * 100) / (12 << 7);
+        bool neg = v < 0 ? 1 : 0;
+        if (v < 0) v = -v;
+        int wv = v / 100; // whole volts
+        int dv = v - (wv * 100); // decimal
+        gfxPrint(neg ? "-" : "+");
+        gfxPrint(wv);
+        gfxPrint(".");
+        if (dv < 10) gfxPrint("0");
+        gfxPrint(dv);
+        gfxPrint("V");
     }
 
     void gfxPixel(int x, int y) {
@@ -216,6 +272,16 @@ public:
         graphics.drawBitmap8(x + gfx_offset, y, w, data);
     }
 
+    uint8_t pad(int range, int number) {
+        uint8_t padding = 0;
+        while (range > 1)
+        {
+            if (number < range) padding += 6;
+            range = range / 10;
+        }
+        return padding;
+    }
+
     //////////////// Hemisphere-specific graphics methods
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +311,7 @@ public:
 
     // Apply small center detent to input, so it reads zero before a threshold
     int DetentedIn(int ch) {
-        return (In(ch) > 300 || In(ch) < -300) ? In(ch) : 0;
+        return (In(ch) > 64 || In(ch) < -64) ? In(ch) : 0;
     }
 
     void Out(int ch, int value, int octave = 0) {
@@ -299,10 +365,17 @@ public:
     int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
 
 protected:
-    int hemisphere; // Which hemisphere (0, 1) this applet uses
+    bool hemisphere; // Which hemisphere (0, 1) this applet uses
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
+
+    /* Forces applet's Start() method to run the next time the applet is selected. This
+     * allows an applet to start up the same way every time, regardless of previous state.
+     */
+    void AllowRestart() {
+        applet_started = 0;
+    }
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////

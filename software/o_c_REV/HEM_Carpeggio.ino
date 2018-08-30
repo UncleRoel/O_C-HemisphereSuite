@@ -1,8 +1,26 @@
-#include "hem_arp_chord.h"
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
+// Copyright (c) 2018, Jason Justian
+//
+// Chord library (c) 2018, Roel Das
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
+#include "hem_arp_chord.h"
 #define HEM_CARPEGGIO_ANIMATION_SPEED 500
 
 class Carpeggio : public HemisphereApplet {
@@ -16,8 +34,6 @@ public:
         step = 0;
         replay = 0;
         transpose = 0;
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         ImprintChord(2);
     }
 
@@ -104,7 +120,6 @@ protected:
     
 private:
     int cursor; // 0=notes, 1=chord
-    braids::Quantizer quantizer;
 
     // Sequencer state
     uint8_t step; // Current step number
@@ -138,14 +153,17 @@ private:
 
         // Coordinates and cursor for tone editing
         if (cursor == 0) {
-            // x,y
+            // x,y: I don't think this is really useful information, so I'm giving the old axe
+            /*
             gfxPrint(32, 40, "(");
             gfxPrint((step % 4) + 1);
             gfxPrint(",");
             gfxPrint((step / 4) + 1);
             gfxPrint(")");
+            */
 
-            gfxPrint(49 + (sequence[step] < 10 ? 8 : 0), 50, sequence[step]);
+            uint8_t midi_note = constrain(sequence[step] + 36 + transpose, 0, 127);
+            gfxPrint(38, 50, midi_note_numbers[midi_note]);
             gfxCursor(32, 58, 30);
         }
     }
@@ -186,8 +204,8 @@ private:
     }
 
     void pitch_out_for_step() {
-        int note = sequence[step] + 48 + transpose;
-        Out(0, quantizer.Lookup(constrain(note, 0, 126)));
+        int note = sequence[step];
+        Out(0, MIDIQuantizer::NoteNumber(note + 36, transpose));
     }
 };
 
@@ -202,38 +220,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Carpeggio Carpeggio_instance[2];
 
-void Carpeggio_Start(int hemisphere) {
+void Carpeggio_Start(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Carpeggio_Controller(int hemisphere, bool forwarding) {
+void Carpeggio_Controller(bool hemisphere, bool forwarding) {
     Carpeggio_instance[hemisphere].BaseController(forwarding);
 }
 
-void Carpeggio_View(int hemisphere) {
+void Carpeggio_View(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseView();
 }
 
-void Carpeggio_Screensaver(int hemisphere) {
+void Carpeggio_Screensaver(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseScreensaverView();
 }
 
-void Carpeggio_OnButtonPress(int hemisphere) {
+void Carpeggio_OnButtonPress(bool hemisphere) {
     Carpeggio_instance[hemisphere].OnButtonPress();
 }
 
-void Carpeggio_OnEncoderMove(int hemisphere, int direction) {
+void Carpeggio_OnEncoderMove(bool hemisphere, int direction) {
     Carpeggio_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Carpeggio_ToggleHelpScreen(int hemisphere) {
+void Carpeggio_ToggleHelpScreen(bool hemisphere) {
     Carpeggio_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Carpeggio_OnDataRequest(int hemisphere) {
+uint32_t Carpeggio_OnDataRequest(bool hemisphere) {
     return Carpeggio_instance[hemisphere].OnDataRequest();
 }
 
-void Carpeggio_OnDataReceive(int hemisphere, uint32_t data) {
+void Carpeggio_OnDataReceive(bool hemisphere, uint32_t data) {
     Carpeggio_instance[hemisphere].OnDataReceive(data);
 }

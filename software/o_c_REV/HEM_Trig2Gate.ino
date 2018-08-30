@@ -221,38 +221,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Trig2Gate Trig2Gate_instance[2];
 
-void Trig2Gate_Start(int hemisphere) {
+void Trig2Gate_Start(bool hemisphere) {
     Trig2Gate_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Trig2Gate_Controller(int hemisphere, bool forwarding) {
+void Trig2Gate_Controller(bool hemisphere, bool forwarding) {
     Trig2Gate_instance[hemisphere].BaseController(forwarding);
 }
 
-void Trig2Gate_View(int hemisphere) {
+void Trig2Gate_View(bool hemisphere) {
     Trig2Gate_instance[hemisphere].BaseView();
 }
 
-void Trig2Gate_Screensaver(int hemisphere) {
+void Trig2Gate_Screensaver(bool hemisphere) {
     Trig2Gate_instance[hemisphere].BaseScreensaverView();
 }
 
-void Trig2Gate_OnButtonPress(int hemisphere) {
+void Trig2Gate_OnButtonPress(bool hemisphere) {
     Trig2Gate_instance[hemisphere].OnButtonPress();
 }
 
-void Trig2Gate_OnEncoderMove(int hemisphere, int direction) {
+void Trig2Gate_OnEncoderMove(bool hemisphere, int direction) {
     Trig2Gate_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Trig2Gate_ToggleHelpScreen(int hemisphere) {
+void Trig2Gate_ToggleHelpScreen(bool hemisphere) {
     Trig2Gate_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Trig2Gate_OnDataRequest(int hemisphere) {
+uint32_t Trig2Gate_OnDataRequest(bool hemisphere) {
     return Trig2Gate_instance[hemisphere].OnDataRequest();
 }
 
-void Trig2Gate_OnDataReceive(int hemisphere, uint32_t data) {
+void Trig2Gate_OnDataReceive(bool hemisphere, uint32_t data) {
     Trig2Gate_instance[hemisphere].OnDataReceive(data);
 }

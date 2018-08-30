@@ -1,15 +1,35 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define HEM_EG_ATTACK 0
 #define HEM_EG_DECAY 1
 #define HEM_EG_SUSTAIN 2
 #define HEM_EG_RELEASE 3
 #define HEM_EG_NO_STAGE -1
-#define HEM_EG_MAX_VALUE 200
+#define HEM_EG_MAX_VALUE 255
 
 #define HEM_SUSTAIN_CONST 35
 #define HEM_EG_DISPLAY_HEIGHT 30
 
 // About four seconds
-#define HEM_EG_MAX_TICKS_AD 66667
+#define HEM_EG_MAX_TICKS_AD 33333
 
 // About eight seconds
 #define HEM_EG_MAX_TICKS_R 133333
@@ -125,10 +145,10 @@ protected:
     
 private:
     int edit_stage;
-    int attack; // Attack rate from 1-200 where 1 is fast
-    int decay; // Decay rate from 1-200 where 1 is fast
-    int sustain; // Sustain level from 1-200 where 1 is low
-    int release; // Release rate from 1-200 where 1 is fast
+    int attack; // Attack rate from 1-255 where 1 is fast
+    int decay; // Decay rate from 1-255 where 1 is fast
+    int sustain; // Sustain level from 1-255 where 1 is low
+    int release; // Release rate from 1-255 where 1 is fast
     int attack_mod; // Modification to attack from CV1
     int release_mod; // Modification to release from CV2
 
@@ -225,10 +245,10 @@ private:
     }
 
     void ReleaseAmplitude(int ch) {
-        int effective_release = constrain(release + release_mod, 1, HEM_EG_MAX_VALUE);
+        int effective_release = constrain(release + release_mod, 1, HEM_EG_MAX_VALUE) - 1;
         int total_stage_ticks = Proportion(effective_release, HEM_EG_MAX_VALUE, HEM_EG_MAX_TICKS_R);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
-        if (effective_release == 1) ticks_remaining = 0;
+        if (effective_release == 0) ticks_remaining = 0;
         if (ticks_remaining <= 0 || amplitude[ch] <= 0) { // End of release; turn off envelope
             stage[ch] = HEM_EG_NO_STAGE;
             stage_ticks[ch] = 0;
@@ -257,38 +277,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ADSREG ADSREG_instance[2];
 
-void ADSREG_Start(int hemisphere) {
+void ADSREG_Start(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ADSREG_Controller(int hemisphere, bool forwarding) {
+void ADSREG_Controller(bool hemisphere, bool forwarding) {
     ADSREG_instance[hemisphere].BaseController(forwarding);
 }
 
-void ADSREG_View(int hemisphere) {
+void ADSREG_View(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseView();
 }
 
-void ADSREG_Screensaver(int hemisphere) {
+void ADSREG_Screensaver(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseScreensaverView();
 }
 
-void ADSREG_OnButtonPress(int hemisphere) {
+void ADSREG_OnButtonPress(bool hemisphere) {
     ADSREG_instance[hemisphere].OnButtonPress();
 }
 
-void ADSREG_OnEncoderMove(int hemisphere, int direction) {
+void ADSREG_OnEncoderMove(bool hemisphere, int direction) {
     ADSREG_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ADSREG_ToggleHelpScreen(int hemisphere) {
+void ADSREG_ToggleHelpScreen(bool hemisphere) {
     ADSREG_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ADSREG_OnDataRequest(int hemisphere) {
+uint32_t ADSREG_OnDataRequest(bool hemisphere) {
     return ADSREG_instance[hemisphere].OnDataRequest();
 }
 
-void ADSREG_OnDataReceive(int hemisphere, uint32_t data) {
+void ADSREG_OnDataReceive(bool hemisphere, uint32_t data) {
     ADSREG_instance[hemisphere].OnDataReceive(data);
 }

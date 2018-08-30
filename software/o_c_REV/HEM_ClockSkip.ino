@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class ClockSkip : public HemisphereApplet {
 public:
 
@@ -104,38 +124,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ClockSkip ClockSkip_instance[2];
 
-void ClockSkip_Start(int hemisphere) {
+void ClockSkip_Start(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ClockSkip_Controller(int hemisphere, bool forwarding) {
+void ClockSkip_Controller(bool hemisphere, bool forwarding) {
     ClockSkip_instance[hemisphere].BaseController(forwarding);
 }
 
-void ClockSkip_View(int hemisphere) {
+void ClockSkip_View(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseView();
 }
 
-void ClockSkip_Screensaver(int hemisphere) {
+void ClockSkip_Screensaver(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseScreensaverView();
 }
 
-void ClockSkip_OnButtonPress(int hemisphere) {
+void ClockSkip_OnButtonPress(bool hemisphere) {
     ClockSkip_instance[hemisphere].OnButtonPress();
 }
 
-void ClockSkip_OnEncoderMove(int hemisphere, int direction) {
+void ClockSkip_OnEncoderMove(bool hemisphere, int direction) {
     ClockSkip_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ClockSkip_ToggleHelpScreen(int hemisphere) {
+void ClockSkip_ToggleHelpScreen(bool hemisphere) {
     ClockSkip_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ClockSkip_OnDataRequest(int hemisphere) {
+uint32_t ClockSkip_OnDataRequest(bool hemisphere) {
     return ClockSkip_instance[hemisphere].OnDataRequest();
 }
 
-void ClockSkip_OnDataReceive(int hemisphere, uint32_t data) {
+void ClockSkip_OnDataReceive(bool hemisphere, uint32_t data) {
     ClockSkip_instance[hemisphere].OnDataReceive(data);
 }

@@ -1,3 +1,22 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 class GateDelay : public HemisphereApplet {
 public:
@@ -50,7 +69,10 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        time[cursor] = constrain(time[cursor] += (direction * 10), 0, 2000);
+        if (time[cursor] > 100) direction *= 2;
+        if (time[cursor] > 500) direction *= 2;
+        if (time[cursor] > 1000) direction *= 2;
+        time[cursor] = constrain(time[cursor] += direction, 0, 2000);
     }
         
     uint32_t OnDataRequest() {
@@ -131,38 +153,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 GateDelay GateDelay_instance[2];
 
-void GateDelay_Start(int hemisphere) {
+void GateDelay_Start(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void GateDelay_Controller(int hemisphere, bool forwarding) {
+void GateDelay_Controller(bool hemisphere, bool forwarding) {
     GateDelay_instance[hemisphere].BaseController(forwarding);
 }
 
-void GateDelay_View(int hemisphere) {
+void GateDelay_View(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseView();
 }
 
-void GateDelay_Screensaver(int hemisphere) {
+void GateDelay_Screensaver(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseScreensaverView();
 }
 
-void GateDelay_OnButtonPress(int hemisphere) {
+void GateDelay_OnButtonPress(bool hemisphere) {
     GateDelay_instance[hemisphere].OnButtonPress();
 }
 
-void GateDelay_OnEncoderMove(int hemisphere, int direction) {
+void GateDelay_OnEncoderMove(bool hemisphere, int direction) {
     GateDelay_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void GateDelay_ToggleHelpScreen(int hemisphere) {
+void GateDelay_ToggleHelpScreen(bool hemisphere) {
     GateDelay_instance[hemisphere].HelpScreen();
 }
 
-uint32_t GateDelay_OnDataRequest(int hemisphere) {
+uint32_t GateDelay_OnDataRequest(bool hemisphere) {
     return GateDelay_instance[hemisphere].OnDataRequest();
 }
 
-void GateDelay_OnDataReceive(int hemisphere, uint32_t data) {
+void GateDelay_OnDataReceive(bool hemisphere, uint32_t data) {
     GateDelay_instance[hemisphere].OnDataReceive(data);
 }

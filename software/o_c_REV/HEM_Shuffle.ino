@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class Shuffle : public HemisphereApplet {
 public:
 
@@ -89,11 +109,18 @@ private:
         for (int i = 0; i < 2; i++)
         {
             int16_t d = delay[i];
-            gfxBitmap(i * 12, 15 + (i * 10), 8, X_NOTE_ICON);
-            gfxPrint(32 + (d < 10 ? 6 : 0), 15 + (i * 10), d);
+            gfxPrint(32 + pad(10, d), 15 + (i * 10), d);
             gfxPrint("%");
             if (cursor == i) gfxCursor(32, 23 + (i * 10), 18);
         }
+
+        // Lines to the first parameter
+        int x = Proportion(delay[0], 100, 20) + 8;
+        gfxDottedLine(x, 41, x, 19, 3);
+        gfxDottedLine(x, 19, 30, 19, 3);
+
+        // Line to the second parameter
+        gfxDottedLine(Proportion(delay[1], 100, 20) + 28, 45, 41, 33, 3);
     }
 
     void DrawIndicator() {
@@ -128,38 +155,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Shuffle Shuffle_instance[2];
 
-void Shuffle_Start(int hemisphere) {
+void Shuffle_Start(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Shuffle_Controller(int hemisphere, bool forwarding) {
+void Shuffle_Controller(bool hemisphere, bool forwarding) {
     Shuffle_instance[hemisphere].BaseController(forwarding);
 }
 
-void Shuffle_View(int hemisphere) {
+void Shuffle_View(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseView();
 }
 
-void Shuffle_Screensaver(int hemisphere) {
+void Shuffle_Screensaver(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseScreensaverView();
 }
 
-void Shuffle_OnButtonPress(int hemisphere) {
+void Shuffle_OnButtonPress(bool hemisphere) {
     Shuffle_instance[hemisphere].OnButtonPress();
 }
 
-void Shuffle_OnEncoderMove(int hemisphere, int direction) {
+void Shuffle_OnEncoderMove(bool hemisphere, int direction) {
     Shuffle_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Shuffle_ToggleHelpScreen(int hemisphere) {
+void Shuffle_ToggleHelpScreen(bool hemisphere) {
     Shuffle_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Shuffle_OnDataRequest(int hemisphere) {
+uint32_t Shuffle_OnDataRequest(bool hemisphere) {
     return Shuffle_instance[hemisphere].OnDataRequest();
 }
 
-void Shuffle_OnDataReceive(int hemisphere, uint32_t data) {
+void Shuffle_OnDataReceive(bool hemisphere, uint32_t data) {
     Shuffle_instance[hemisphere].OnDataReceive(data);
 }

@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class GatedVCA : public HemisphereApplet {
 public:
 
@@ -17,9 +37,11 @@ public:
         output += amp_offset_cv;
         output = constrain(output, -HEMISPHERE_MAX_CV, HEMISPHERE_MAX_CV);
 
-        Out(1, output); // Regular VCA output on B
-        if (Gate(0)) Out(0, output); // Gated VCA output on A
+        if (Gate(0)) Out(0, output); // Normally-off gated VCA output on A
         else Out(0, 0);
+
+        if (Gate(1)) Out(1, 0); // Normally-on ungated VCA output on B
+        else Out(1, output);
     }
 
     void View() {
@@ -49,9 +71,9 @@ public:
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Gate Out A";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=A Gate 2=B Revrs";
         help[HEMISPHERE_HELP_CVS] = "1=CV signal 2=Amp";
-        help[HEMISPHERE_HELP_OUTS] = "A=Gated out B=Out";
+        help[HEMISPHERE_HELP_OUTS] = "A=Norm off B=N. on";
         help[HEMISPHERE_HELP_ENCODER] = "T=Amp CV Offset";
     }
     
@@ -61,7 +83,7 @@ private:
 
     void DrawInterface() {
         gfxPrint(0, 15, "Offset:");
-        gfxPrint(amp_offset_pct);
+        gfxPrint(pad(100, amp_offset_pct), amp_offset_pct);
         gfxSkyline();
     }
 };
@@ -77,38 +99,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 GatedVCA GatedVCA_instance[2];
 
-void GatedVCA_Start(int hemisphere) {
+void GatedVCA_Start(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void GatedVCA_Controller(int hemisphere, bool forwarding) {
+void GatedVCA_Controller(bool hemisphere, bool forwarding) {
     GatedVCA_instance[hemisphere].BaseController(forwarding);
 }
 
-void GatedVCA_View(int hemisphere) {
+void GatedVCA_View(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseView();
 }
 
-void GatedVCA_Screensaver(int hemisphere) {
+void GatedVCA_Screensaver(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseScreensaverView();
 }
 
-void GatedVCA_OnButtonPress(int hemisphere) {
+void GatedVCA_OnButtonPress(bool hemisphere) {
     GatedVCA_instance[hemisphere].OnButtonPress();
 }
 
-void GatedVCA_OnEncoderMove(int hemisphere, int direction) {
+void GatedVCA_OnEncoderMove(bool hemisphere, int direction) {
     GatedVCA_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void GatedVCA_ToggleHelpScreen(int hemisphere) {
+void GatedVCA_ToggleHelpScreen(bool hemisphere) {
     GatedVCA_instance[hemisphere].HelpScreen();
 }
 
-uint32_t GatedVCA_OnDataRequest(int hemisphere) {
+uint32_t GatedVCA_OnDataRequest(bool hemisphere) {
     return GatedVCA_instance[hemisphere].OnDataRequest();
 }
 
-void GatedVCA_OnDataReceive(int hemisphere, uint32_t data) {
+void GatedVCA_OnDataReceive(bool hemisphere, uint32_t data) {
     GatedVCA_instance[hemisphere].OnDataReceive(data);
 }

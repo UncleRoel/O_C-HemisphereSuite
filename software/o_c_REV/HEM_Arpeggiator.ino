@@ -378,38 +378,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Arpeggiator Arpeggiator_instance[2];
 
-void Arpeggiator_Start(int hemisphere) {
+void Arpeggiator_Start(bool hemisphere) {
     Arpeggiator_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Arpeggiator_Controller(int hemisphere, bool forwarding) {
+void Arpeggiator_Controller(bool hemisphere, bool forwarding) {
     Arpeggiator_instance[hemisphere].BaseController(forwarding);
 }
 
-void Arpeggiator_View(int hemisphere) {
+void Arpeggiator_View(bool hemisphere) {
     Arpeggiator_instance[hemisphere].BaseView();
 }
 
-void Arpeggiator_Screensaver(int hemisphere) {
+void Arpeggiator_Screensaver(bool hemisphere) {
     Arpeggiator_instance[hemisphere].BaseScreensaverView();
 }
 
-void Arpeggiator_OnButtonPress(int hemisphere) {
+void Arpeggiator_OnButtonPress(bool hemisphere) {
     Arpeggiator_instance[hemisphere].OnButtonPress();
 }
 
-void Arpeggiator_OnEncoderMove(int hemisphere, int direction) {
+void Arpeggiator_OnEncoderMove(bool hemisphere, int direction) {
     Arpeggiator_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Arpeggiator_ToggleHelpScreen(int hemisphere) {
+void Arpeggiator_ToggleHelpScreen(bool hemisphere) {
     Arpeggiator_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Arpeggiator_OnDataRequest(int hemisphere) {
+uint32_t Arpeggiator_OnDataRequest(bool hemisphere) {
     return Arpeggiator_instance[hemisphere].OnDataRequest();
 }
 
-void Arpeggiator_OnDataReceive(int hemisphere, uint32_t data) {
+void Arpeggiator_OnDataReceive(bool hemisphere, uint32_t data) {
     Arpeggiator_instance[hemisphere].OnDataReceive(data);
 }

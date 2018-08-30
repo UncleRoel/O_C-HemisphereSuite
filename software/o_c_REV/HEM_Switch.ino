@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 class Switch : public HemisphereApplet {
 public:
 
@@ -95,38 +115,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Switch Switch_instance[2];
 
-void Switch_Start(int hemisphere) {
+void Switch_Start(bool hemisphere) {
     Switch_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Switch_Controller(int hemisphere, bool forwarding) {
+void Switch_Controller(bool hemisphere, bool forwarding) {
     Switch_instance[hemisphere].BaseController(forwarding);
 }
 
-void Switch_View(int hemisphere) {
+void Switch_View(bool hemisphere) {
     Switch_instance[hemisphere].BaseView();
 }
 
-void Switch_Screensaver(int hemisphere) {
+void Switch_Screensaver(bool hemisphere) {
     Switch_instance[hemisphere].BaseScreensaverView();
 }
 
-void Switch_OnButtonPress(int hemisphere) {
+void Switch_OnButtonPress(bool hemisphere) {
     Switch_instance[hemisphere].OnButtonPress();
 }
 
-void Switch_OnEncoderMove(int hemisphere, int direction) {
+void Switch_OnEncoderMove(bool hemisphere, int direction) {
     Switch_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Switch_ToggleHelpScreen(int hemisphere) {
+void Switch_ToggleHelpScreen(bool hemisphere) {
     Switch_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Switch_OnDataRequest(int hemisphere) {
+uint32_t Switch_OnDataRequest(bool hemisphere) {
     return Switch_instance[hemisphere].OnDataRequest();
 }
 
-void Switch_OnDataReceive(int hemisphere, uint32_t data) {
+void Switch_OnDataReceive(bool hemisphere, uint32_t data) {
     Switch_instance[hemisphere].OnDataReceive(data);
 }
