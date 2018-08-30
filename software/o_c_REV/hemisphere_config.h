@@ -57,5 +57,3 @@
     DECLARE_APPLET( 53, 0x80, Chrono), \
     DECLARE_APPLET( 54, 0x80, PedalTool), \
 }
-
-//    DECLARE_APPLET( 13, 0x14, TLNeuron), \

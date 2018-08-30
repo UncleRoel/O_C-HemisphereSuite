@@ -10,6 +10,7 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
+//#include "HSMIDI.h"
 // 11 + 5 + 3 + 5 + 2
 // Max and min clocks in bpm
 #define HEM_ARP_CLK_HIGH 2048 
@@ -150,11 +151,9 @@ public:
                 }
               }
         // output note
-        int32_t outputter = In(0)+quantizer.Lookup(current_note + 48);
-        // Not really sure how to constrain here and if needed.
-        //Out(0, constrain(outputter, -HEMISPHERE_MAX_CV, HEMISPHERE_MAX_CV));
+        int32_t outputter = In(0)+quantizer.Lookup(current_note + 64);
         Out(0, outputter);
-        
+        //Out(0,MIDIQuantizer::CV(current_note + 48,0));
     }
 	/* Draw the screen */
     void View() {
