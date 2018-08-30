@@ -7,10 +7,10 @@
 // - Added clock multiplication. (Dividing the clock /32 is not very common anyway. If higher values are needed they can be changed in the hem_arp_divisions[] array
 
 #include "hem_arp_chord.h"
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
-//#include "HSMIDI.h"
+//#include "braids_quantizer.h"
+//#include "braids_quantizer_scales.h"
+//#include "OC_scales.h"
+#include "HSMIDI.h"
 // 11 + 5 + 3 + 5 + 2
 // Max and min clocks in bpm
 #define HEM_ARP_CLK_HIGH 2048 
@@ -70,8 +70,8 @@ public:
         tick_at_last_note = 0; 
         cycle_time = 0;
         
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
+        //quantizer.Init();
+        //quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
     }
   /* Run during interrupt service routine, 16667 times per second */
     void Controller() {
@@ -151,9 +151,9 @@ public:
                 }
               }
         // output note
-        int32_t outputter = In(0)+quantizer.Lookup(current_note + 64);
-        Out(0, outputter);
-        //Out(0,MIDIQuantizer::CV(current_note + 48,0));
+        //int32_t outputter = In(0)+quantizer.Lookup(current_note + 64);
+        //Out(0, outputter);
+        Out(0,MIDIQuantizer::CV(current_note + 48,0));
     }
 	/* Draw the screen */
     void View() {
