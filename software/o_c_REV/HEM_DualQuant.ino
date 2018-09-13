@@ -65,10 +65,6 @@ public:
         DrawSelector();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-    }
-
     void OnButtonPress() {
         if (++cursor > 3) cursor = 0;
         ResetCursor();
@@ -151,6 +147,7 @@ private:
             // scale, or even if it has 12 notes in it:
             int semitone = (last_note[ch] / 128) % 12;
             int note_x = semitone * 4; // 4 pixels per semitone
+            if (note_x < 0) note_x = 0;
             gfxBitmap(10 + note_x, 41 + (10 * ch), 8, notes[ch]);
         }
     }
@@ -177,10 +174,6 @@ void DualQuant_Controller(bool hemisphere, bool forwarding) {
 
 void DualQuant_View(bool hemisphere) {
     DualQuant_instance[hemisphere].BaseView();
-}
-
-void DualQuant_Screensaver(bool hemisphere) {
-    DualQuant_instance[hemisphere].BaseScreensaverView();
 }
 
 void DualQuant_OnButtonPress(bool hemisphere) {

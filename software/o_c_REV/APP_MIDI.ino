@@ -142,6 +142,7 @@ struct CaptainMIDILog {
                 if (app_code == 'H') graphics.print("Hemisphere");
                 if (app_code == 'D') graphics.print("D. Timeline");
                 if (app_code == 'E') graphics.print("Scale Editor");
+                if (app_code == 'T') graphics.print("Enigma");
             }
         } else {
             graphics.setPrintPos(1, y);
@@ -225,10 +226,6 @@ public:
         if (copy_mode) DrawCopyScreen();
         else if (display == 0) DrawSetupScreens();
         else DrawLogScreen();
-    }
-
-    void ScreensaverView() {
-        DrawSetupScreens();
     }
 
     void SelectSetup(int setup_number, int new_screen = -1) {
@@ -877,16 +874,13 @@ void MIDI_handleAppEvent(OC::AppEvent event) {
     }
 }
 
-void MIDI_loop() {
-}
+void MIDI_loop() {}
 
 void MIDI_menu() {
     captain_midi_instance.BaseView();
 }
 
-void MIDI_screensaver() {
-    captain_midi_instance.BaseScreensaverView();
-}
+void MIDI_screensaver() {}
 
 void MIDI_handleButtonEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_BUTTON_R && event.type == UI::EVENT_BUTTON_PRESS)

@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 44
+#define HEMISPHERE_AVAILABLE_APPLETS 47
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -26,6 +26,7 @@
     DECLARE_APPLET( 30, 0x10, Compare), \
     DECLARE_APPLET( 24, 0x02, CVRec), \
     DECLARE_APPLET(  9, 0x08, DualQuant), \
+    DECLARE_APPLET( 45, 0x02, EnigmaJr), \
     DECLARE_APPLET( 42, 0x11, EnvFollow), \
     DECLARE_APPLET( 29, 0x04, GateDelay), \
     DECLARE_APPLET( 17, 0x50, GatedVCA), \
@@ -36,6 +37,7 @@
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
     DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET( 20, 0x02, Palimpsest), \
+    DECLARE_APPLET( 44, 0x01, RunglBook), \
     DECLARE_APPLET( 26, 0x08, ScaleDuet), \
     DECLARE_APPLET( 40, 0x40, Schmitt), \
     DECLARE_APPLET( 23, 0x80, Scope), \
@@ -43,8 +45,9 @@
     DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
-    DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 19, 0x01, Slew), \
+    DECLARE_APPLET( 46, 0x08, Squanch), \
+    DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 13, 0x40, TLNeuron), \
     DECLARE_APPLET( 37, 0x40, Trending), \
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
