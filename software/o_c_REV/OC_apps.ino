@@ -34,18 +34,6 @@
   isr \
 }
 
-#ifdef BORING_APP_NAMES
-OC::App available_apps[] = {
-  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('M','I', "MIDI Interface", MIDI, MIDI_isr),
-  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
-  DECLARE_APP('E','N', "Enigma", EnigmaTMWS, EnigmaTMWS_isr),
-  DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
-  DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
-  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('R','F', "Voltages", REFS, REFS_isr),
-};
-#else 
 OC::App available_apps[] = {
   DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
   DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
@@ -54,9 +42,7 @@ OC::App available_apps[] = {
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('R','F', "References", REFS, REFS_isr),
 };
-#endif
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
 
@@ -423,14 +409,14 @@ bool Ui::ConfirmReset() {
     GRAPHICS_BEGIN_FRAME(true);
     weegfx::coord_t y = menu::CalcLineY(0);
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[L] EXIT");
+    graphics.print("[L] Exit");
     y += menu::kMenuLineH;
 
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[R] RESET SETTINGS" );
+    graphics.print("[R] Reset settings" );
     y += menu::kMenuLineH;
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("    AND ERASE EEPROM");
+    graphics.print("    and erase EEPROM");
     GRAPHICS_END_FRAME();
 
   } while (!done);

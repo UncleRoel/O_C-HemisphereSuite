@@ -65,7 +65,7 @@ public:
 
         // Send 5-bit quantized CV
         int note = reg & 0x1f;
-        Out(0, quantizer.Lookup(note + 48));
+        Out(0, quantizer.Lookup(note + 64));
 
         // Send 8-bit proportioned CV
         int cv = Proportion(reg & 0x00ff, 255, HEMISPHERE_MAX_CV);
@@ -112,6 +112,7 @@ public:
         p = Unpack(data, PackLocation {16,7});
         length = Unpack(data, PackLocation {23,4}) + 1;
         scale = Unpack(data, PackLocation {27,6});
+        quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
     }
 
 protected:

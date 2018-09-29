@@ -186,7 +186,10 @@ public:
       }
       else { // internal clock!
         if (selected == SEL_ARP_CLK) {
-          bpm += direction;
+          int scaler = 1;
+          if (bpm >= 500) scaler = 10;
+          if (bpm >= 1000) scaler = 20;
+          bpm += (direction * scaler);
           bpm = constrain(bpm, HEM_ARP_CLK_LOW, HEM_ARP_CLK_HIGH);
         }
       }      

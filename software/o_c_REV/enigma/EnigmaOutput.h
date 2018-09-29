@@ -105,7 +105,7 @@ public:
             byte bits = ty + 3; // Number of bits
             uint8_t mask = 0;
             for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
-            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
+            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 64; // Note types under 7-bit start at Middle C
             int note_number = (reg & mask) + note_shift;
             note_number = constrain(note_number, 0, 127);
             app->Out(out, quantizer.Lookup(note_number) + transpose);
@@ -148,14 +148,14 @@ public:
             }
         }
 
-        // Modulation based on low 8 bits
+        // Modulation based on low 8 bits, shifted right for MIDI range
         if (ty == EnigmaOutputType::MODULATION && midi_channel()) {
-            usbMIDI.sendControlChange(1, reg & 0x00ff, midi_channel());
+            usbMIDI.sendControlChange(1, (reg & 0x00ff) >> 1, midi_channel());
         }
 
         // Expression based on low 8 bits; for MIDI, expression is a percentage of channel volume
         if (ty == EnigmaOutputType::EXPRESSION && midi_channel()) {
-            usbMIDI.sendControlChange(11, reg & 0x00ff, midi_channel());
+            usbMIDI.sendControlChange(11, (reg & 0x00ff) >> 1, midi_channel());
         }
 
         // Trigger and Gate behave the same way with MIDI; They'll use the last note that wasn't sent

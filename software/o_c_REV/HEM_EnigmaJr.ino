@@ -111,9 +111,9 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
-        help[HEMISPHERE_HELP_CVS]      = "1=Trpos 2=Organize";
+        help[HEMISPHERE_HELP_CVS]      = "1=Shift 2=Organize";
         help[HEMISPHERE_HELP_OUTS]     = "Assignable";
-        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Outputs";
+        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Prob/Assign";
         //                               "------------------" <-- Size Guide
     }
     
@@ -159,7 +159,7 @@ private:
         if (cursor == 2) gfxCursor(13, 33, 44);
         if (cursor == 3) gfxCursor(13, 43, 44);
 
-        tm_state.DrawAt(0, 45);
+        tm_state.DrawAt(hemisphere * 64, 45);
     }
 
     // When a new TM is selected, load it here

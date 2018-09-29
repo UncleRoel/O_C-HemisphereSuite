@@ -8,13 +8,13 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 47
+#define HEMISPHERE_AVAILABLE_APPLETS 49
 
-//////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 34, 0x01, ADEG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
+    DECLARE_APPLET( 47, 0x09, ASR), \
     DECLARE_APPLET( 41, 0x41, Binary), \
     DECLARE_APPLET( 38, 0x80, BowTieSeq), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
@@ -42,6 +42,7 @@
     DECLARE_APPLET( 40, 0x40, Schmitt), \
     DECLARE_APPLET( 23, 0x80, Scope), \
     DECLARE_APPLET( 14, 0x02, Sequence5), \
+    DECLARE_APPLET( 48, 0x45, ShiftGate), \
     DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
@@ -60,3 +61,4 @@
     DECLARE_APPLET( 53, 0x80, Chrono), \
     DECLARE_APPLET( 54, 0x80, PedalTool), \
 }
+/*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */
