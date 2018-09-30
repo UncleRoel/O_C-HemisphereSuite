@@ -38,7 +38,8 @@ const hem_arp_chord Arp_Chords[] = {
   //ARPEGGIATE
   {"Octaves",{0},1,1},
   {"1 5",{0, 7},2,1},
-  
+  {"1 8 5",{0, 12, 19},3,2},
+    
   {"Maj triad",{0, 4, 7}, 3,1},
   {"Maj inv 1",{4, 7, 12}, 3,1},
   {"Maj inv 2",{7, 12, 16}, 3,1},

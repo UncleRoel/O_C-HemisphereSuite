@@ -55,10 +55,10 @@
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 39, 0x80, Tuner), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
-    DECLARE_APPLET( 50, 0x04, BigBen), \
     DECLARE_APPLET( 51, 0x08, Arpeggiator),\
-    DECLARE_APPLET( 52, 0x04, Trig2Gate), \
+    DECLARE_APPLET( 50, 0x04, BigBen), \
     DECLARE_APPLET( 53, 0x80, Chrono), \
-    DECLARE_APPLET( 54, 0x80, PedalTool), \
+    DECLARE_APPLET( 55, 0x04, Gate2Trig), \
+    DECLARE_APPLET( 52, 0x04, Trig2Gate), \
 }
 /*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */

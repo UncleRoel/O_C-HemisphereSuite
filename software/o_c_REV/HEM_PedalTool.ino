@@ -12,6 +12,7 @@
 #define HEM_PEDALTOOL_DRAW_CLK_CYCLES 100 
 // Samplecounter (scope speed)
 #define HEM_PEDALTOOL_SAMPLE_COUNT 500
+#define HEM_PEDALTOOL_DEBOUNCETIME 1000 // in ticks, 1000 ticks = 60ms
 // Cursor selectors
 //#define SEL_T2G_LENGTH_1 0
 //#define SEL_T2G_LENGTH_2 1
@@ -30,7 +31,9 @@ public:
           //initialise channels
           Ch_GateTicks=-1; // Ticks the gate has been high. -1 means gate is low.
           last_trigger=0;
-          Ch_GateLengthMenu = 1000;        
+          Ch_GateLengthMenu = 1000;
+          gate_debounce[0]=0;
+          gate_debounce[1]=0;        
         //}
         cursor = 0;
         
@@ -44,20 +47,26 @@ public:
           if (Ch_GateLengthMenu <0) Ch_GateInv=1;
           else Ch_GateInv=0;
 
-          if (Clock(0)) {
-            // handle clock: start counting ticks + set output 
-            Ch_GateTicks=0;
-            GateOut(0, !Ch_GateInv);            
-            gate[0]=!Ch_GateInv;
-            last_trigger = OC::CORE::ticks;
-          }
-          
           // Take CVs modulation into account
           //  ticks = length(ms) *1000 us /60 ticks/us
           if (!Ch_GateInv) Ch_CurrentGateLength = Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
           else Ch_CurrentGateLength = -Ch_GateLengthMenu + Proportion(In(0),HEMISPHERE_MAX_CV,HEM_PEDALTOOL_CV_RANGE);
           Ch_CurrentGateLength = constrain(Ch_CurrentGateLength, 1, HEM_PEDALTOOL_LENGTH_HIGH);
           Ch_CurrentGateLength = Ch_CurrentGateLength * 100 /6; // Convert to ticks!!
+
+          // We start the debouncing only when gate is high and output has been set! 
+          if (Gate(0) && (gate[0]==!Ch_GateInv)) gate_debounce[0] = HEM_PEDALTOOL_DEBOUNCETIME;
+          // Countdown while gate is low
+          if (!Gate(0) && (gate_debounce[0] > 0)) gate_debounce[0]--;    
+
+          if (Clock(0) && (gate_debounce[0]==0)) {
+              // handle clock: start counting ticks + set output 
+              Ch_GateTicks=0;
+              GateOut(0, !Ch_GateInv);            
+              gate[0]=!Ch_GateInv;
+              last_trigger = OC::CORE::ticks; // Start counting, output is high for a time after this clock.
+          }
+          
 
           // Check if gate time has passed
           if (Ch_GateTicks>=Ch_CurrentGateLength) {
@@ -171,6 +180,7 @@ private:
     int scope_sample_nr;
     int sample_countdown;
     int sample_num;
+    int gate_debounce[2];
 
     const uint8_t NOT_bitmap[12] = { 0x08, 0x08, 0x08, 0x7f, 0x7f, 0x3e, 0x1c, 0x1c, 0x08, 0x0a, 0x0c}; // NOT
       /*  {0x22, 0x22, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x3e, 0x08, 0x08, 0x08}, // AND
