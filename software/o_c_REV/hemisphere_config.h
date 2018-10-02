@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 49
+#define HEMISPHERE_AVAILABLE_APPLETS 50
 
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
@@ -59,6 +59,7 @@
     DECLARE_APPLET( 50, 0x04, BigBen), \
     DECLARE_APPLET( 53, 0x80, Chrono), \
     DECLARE_APPLET( 55, 0x04, Gate2Trig), \
+    DECLARE_APPLET( 56, 0x01, SlowRise), \
     DECLARE_APPLET( 52, 0x04, Trig2Gate), \
 }
 /*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */
