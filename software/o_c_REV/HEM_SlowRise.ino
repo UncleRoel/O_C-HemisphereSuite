@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// Todo: add CV1, substract CV2
+// Max-Voltage going from -3 to 5V
+
 #define HEM_SLOWRISE_STATE_ZERO 0
 #define HEM_SLOWRISE_STATE_RUNNING 1
 #define HEM_SLOWRISE_STATE_PAUSED 2
@@ -274,13 +277,25 @@ public:
     uint32_t OnDataRequest() {
         uint32_t data = 0;
         // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,4}, SlowRiseDuration[0]); // hours
+        Pack(data, PackLocation {4,6}, SlowRiseDuration[1]); // min
+        Pack(data, PackLocation {10,6}, SlowRiseDuration[2]); // sec
+        Pack(data, PackLocation {16,1}, RiseFall); 
+        Pack(data, PackLocation {17,9}, max_voltage+256); 
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
         // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        SlowRiseDuration[0] = Unpack(data, PackLocation {0,4});
+        SlowRiseDuration[1] = Unpack(data, PackLocation {4,6}); 
+        SlowRiseDuration[2] = Unpack(data, PackLocation {10,6}); 
+        SlowRiseDuration_runtime[0]=SlowRiseDuration[0];
+        SlowRiseDuration_runtime[1]=SlowRiseDuration[1];
+        SlowRiseDuration_runtime[2]=SlowRiseDuration[2];
+        SetSlowRiseTicksDuration();
+        RiseFall = Unpack(data, PackLocation {16,1}); 
+        max_voltage = Unpack(data, PackLocation {17,9})-256;  
     }
 
 protected:
@@ -303,8 +318,6 @@ private:
     int MenuState;
     int TimeSetState;
     boolean VoltSetState;
-    boolean LapState;
-    uint32_t LapTicks;
     boolean RiseFall;
     int max_voltage;
     simfloat signal;
