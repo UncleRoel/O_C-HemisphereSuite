@@ -45,12 +45,17 @@ public:
     virtual void Start();
     virtual void Controller();
     virtual void View();
+    virtual void Resume();
 
     void BaseController() {
         for (uint8_t ch = 0; ch < 4; ch++)
         {
             // Set ADC input values
             inputs[ch] = OC::ADC::raw_pitch_value((ADC_CHANNEL)ch);
+            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+                changed_cv[ch] = 1;
+                last_cv[ch] = inputs[ch];
+            } else changed_cv[ch] = 0;
 
             if (clock_countdown[ch] > 0) {
                 if (--clock_countdown[ch] == 0) Out(ch, 0);
@@ -102,6 +107,10 @@ public:
         return (In(ch) > 64 || In(ch) < -64) ? In(ch) : 0;
     }
 
+    bool Changed(int ch) {
+        return changed_cv[ch];
+    }
+
     bool Gate(int ch) {
         bool high = 0;
         if (ch == 0) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
@@ -117,12 +126,10 @@ public:
 
     bool Clock(int ch) {
         bool clocked = 0;
-
         if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
         if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         if (ch == 2) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
         if (ch == 3) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
-
         if (clocked) last_clock[ch] = OC::CORE::ticks;
         return clocked;
     }
@@ -205,6 +212,14 @@ public:
         graphics.drawLine(x, y, x2, y2);
     }
 
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+#ifdef HS_GFX_MOD
+        graphics.drawLine(x, y, x2, y2, p);
+#else
+        graphics.drawLine(x, y, x2, y2);
+#endif
+    }
+
     void gfxCircle(int x, int y, int r) {
         graphics.drawCircle(x, y, r);
     }
@@ -226,6 +241,7 @@ public:
             if (abs(number) < range) padding += 6;
             range = range / 10;
         }
+        if (number < 0 && padding > 0) padding -= 6; // Compensate for minus sign
         return padding;
     }
 
@@ -252,6 +268,8 @@ private:
     uint32_t last_view_tick; // Time since the last view, for activating screen blanking
     int inputs[4]; // Last ADC values
     int outputs[4]; // Last DAC values; inputs[] and outputs[] are used to allow access to values in Views
+    bool changed_cv[4]; // Has the input changed by more than 1/8 semitone since the last read?
+    int last_cv[4]; // For change detection
     uint32_t last_clock[4]; // Keeps time since last clock
 };
 

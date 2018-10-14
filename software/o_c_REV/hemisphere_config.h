@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 50
+#define HEMISPHERE_AVAILABLE_APPLETS 55
 
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
@@ -16,6 +16,7 @@
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
     DECLARE_APPLET( 47, 0x09, ASR), \
     DECLARE_APPLET( 41, 0x41, Binary), \
+    DECLARE_APPLET( 51, 0x80, BootsNCat), \
     DECLARE_APPLET( 38, 0x80, BowTieSeq), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \
@@ -33,6 +34,7 @@
     DECLARE_APPLET( 16, 0x80, LoFiPCM), \
     DECLARE_APPLET( 10, 0x44, Logic), \
     DECLARE_APPLET( 21, 0x01, LowerRenz), \
+    DECLARE_APPLET( 50, 0x04, Metronome), \
     DECLARE_APPLET(150, 0x20, hMIDIIn), \
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
     DECLARE_APPLET( 33, 0x10, MixerBal), \
@@ -54,6 +56,9 @@
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 39, 0x80, Tuner), \
+    DECLARE_APPLET( 52, 0x01, VectorEG), \
+    DECLARE_APPLET( 49, 0x01, VectorLFO), \
+    DECLARE_APPLET( 53, 0x01, VectorMod), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
     DECLARE_APPLET( 51, 0x08, Arpeggiator),\
     DECLARE_APPLET( 50, 0x04, BigBen), \

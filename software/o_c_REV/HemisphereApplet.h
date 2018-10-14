@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "HSicons.h"
+#include "HSClockManager.h"
 
 #define LEFT_HEMISPHERE 0
 #define RIGHT_HEMISPHERE 1
@@ -97,8 +98,13 @@ public:
         ForEachChannel(ch)
         {
             // Set CV inputs
+
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
+            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+                changed_cv[ch] = 1;
+                last_cv[ch] = inputs[ch];
+            } else changed_cv[ch] = 0;
 
             // Handle clock timing
             if (clock_countdown[ch] > 0) {
@@ -143,10 +149,12 @@ public:
     //////////////// Notifications from the base class regarding manager state(s)
     ////////////////////////////////////////////////////////////////////////////////
     void DrawNotifications() {
-        // CV Forwarding Icon
-        if (master_clock_bus) {
-            graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
-        }
+            // Metronome Icon
+            ClockManager *clock_m = clock_m->get();
+            if (hemisphere == 0 && clock_m->IsRunning()) gfxIcon(56, 1, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
+
+            // CV Forwarding Icon
+            if (master_clock_bus) gfxIcon(-8, 1, CLOCK_ICON);
     }
 
     void DrawHelpScreen() {
@@ -305,14 +313,18 @@ public:
 
     bool Clock(int ch) {
         bool clocked = 0;
-        if (master_clock_bus && ch == 0) {
-            clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
-        } else if (hemisphere == 0) {
+        if (hemisphere == 0) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         } else if (hemisphere == 1) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
+        }
+
+        if (ch == 0) {
+            ClockManager *clock_m = clock_m->get();
+            if (clock_m->IsRunning()) clocked = clock_m->Tock();
+            else if (master_clock_bus) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
         }
 
         if (clocked) last_clock[ch] = OC::CORE::ticks;
@@ -341,11 +353,12 @@ public:
         Out(ch, 0, (high ? 5 : 0));
     }
 
-    // Buffered I/O functions for use in Views
+    // Buffered I/O functions
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
     int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
     int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
+    bool Changed(int ch) {return changed_cv[ch];}
 
 protected:
     bool hemisphere; // Which hemisphere (0, 1) this applet uses
@@ -439,4 +452,6 @@ private:
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view
     int help_active;
+    bool changed_cv[2]; // Has the input changed by more than 1/8 semitone since the last read?
+    int last_cv[2]; // For change detection
 };

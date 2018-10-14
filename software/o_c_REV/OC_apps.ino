@@ -42,6 +42,8 @@ OC::App available_apps[] = {
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
+  DECLARE_APP('W','A', "Waveform Editor", WaveformEditor, WaveformEditor_isr),
+  DECLARE_APP('S','E', "Setup / About", Settings, Settings_isr),
 };
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
@@ -62,6 +64,7 @@ struct GlobalSettings {
   OC::Scale user_scales[OC::Scales::SCALE_USER_LAST];
   OC::Pattern user_patterns[OC::Patterns::PATTERN_USER_ALL];
   HS::TuringMachine user_turing_machines[HS::TURING_MACHINE_COUNT];
+  HS::VOSegment user_waveforms[HS::VO_SEGMENT_COUNT];
   OC::Autotune_data auto_calibration_data[DAC_CHANNEL_LAST];
 };
 
@@ -101,6 +104,7 @@ void save_global_settings() {
   memcpy(global_settings.user_scales, OC::user_scales, sizeof(OC::user_scales));
   memcpy(global_settings.user_patterns, OC::user_patterns, sizeof(OC::user_patterns));
   memcpy(global_settings.user_turing_machines, HS::user_turing_machines, sizeof(HS::user_turing_machines));
+  memcpy(global_settings.user_waveforms, HS::user_waveforms, sizeof(HS::user_waveforms));
   memcpy(global_settings.auto_calibration_data, OC::auto_calibration_data, sizeof(OC::auto_calibration_data));
   // scaling settings:
   global_settings.DAC_scaling = OC::DAC::store_scaling();
@@ -256,6 +260,7 @@ void Init(bool reset_settings) {
       memcpy(user_scales, global_settings.user_scales, sizeof(user_scales));
       memcpy(user_patterns, global_settings.user_patterns, sizeof(user_patterns));
       memcpy(HS::user_turing_machines, global_settings.user_turing_machines, sizeof(HS::user_turing_machines));
+      memcpy(HS::user_waveforms, global_settings.user_waveforms, sizeof(HS::user_waveforms));
       memcpy(auto_calibration_data, global_settings.auto_calibration_data, sizeof(auto_calibration_data));
       DAC::choose_calibration_data(); // either use default data, or auto_calibration_data
       DAC::restore_scaling(global_settings.DAC_scaling); // recover output scaling settings
@@ -407,16 +412,19 @@ bool Ui::ConfirmReset() {
     }
 
     GRAPHICS_BEGIN_FRAME(true);
-    weegfx::coord_t y = menu::CalcLineY(0);
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[L] Exit");
-    y += menu::kMenuLineH;
+    graphics.setPrintPos(1, 2);
+    graphics.print("Setup: Reset");
+    graphics.drawLine(0, 10, 127, 10);
+    graphics.drawLine(0, 12, 127, 12);
 
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[R] Reset settings" );
-    y += menu::kMenuLineH;
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("    and erase EEPROM");
+    graphics.setPrintPos(1, 15);
+    graphics.print("Reset application");
+    graphics.setPrintPos(1, 25);
+    graphics.print("settings on EEPROM?");
+
+    graphics.setPrintPos(0, 55);
+    graphics.print("[CANCEL]         [OK]");
+
     GRAPHICS_END_FRAME();
 
   } while (!done);

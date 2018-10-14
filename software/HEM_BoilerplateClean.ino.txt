@@ -44,8 +44,7 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxSkyline();
-        // Add other view code as private methods
+        DrawInterface();
     }
 
     void OnButtonPress() {
@@ -79,7 +78,9 @@ protected:
 private:
     int cursor;
     
-    
+    void DrawInterface() {
+        gfxSkyline();
+    }
 };
 
 

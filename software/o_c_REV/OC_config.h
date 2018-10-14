@@ -30,8 +30,8 @@ static constexpr size_t kMaxTriggerDelayTicks = 96;
 #define OCTAVES 10      // # octaves
 #define SEMITONES (OCTAVES * 12)
 
-static constexpr unsigned long SPLASHSCREEN_DELAY_MS = 1000;
-static constexpr unsigned long SPLASHSCREEN_TIMEOUT_MS = 2048;
+static constexpr unsigned long SPLASHSCREEN_DELAY_MS = 1; // HS deprecates splash screen
+static constexpr unsigned long SPLASHSCREEN_TIMEOUT_MS = 1;
 
 static constexpr unsigned long APP_SELECTION_TIMEOUT_MS = 25000;
 static constexpr unsigned long SETTINGS_SAVE_TIMEOUT_MS = 1000;
@@ -40,7 +40,7 @@ static constexpr unsigned long SETTINGS_SAVE_TIMEOUT_MS = 1000;
 #define EEPROM_CALIBRATIONDATA_END 128
 
 #define EEPROM_GLOBALSETTINGS_START EEPROM_CALIBRATIONDATA_END
-#define EEPROM_GLOBALSETTINGS_END 850 
+#define EEPROM_GLOBALSETTINGS_END 960
 
 #define EEPROM_APPDATA_START EEPROM_GLOBALSETTINGS_END
 #define EEPROM_APPDATA_END EEPROMStorage::LENGTH
