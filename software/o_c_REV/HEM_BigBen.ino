@@ -94,11 +94,6 @@ public:
         DrawSelector();
     }
 
-	/* Draw the screensaver */
-    void ScreensaverView() {
-        DrawSelector();
-    }
-
 	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
       selected +=1;
@@ -218,10 +213,6 @@ void BigBen_Controller(bool hemisphere, bool forwarding) {
 
 void BigBen_View(bool hemisphere) {
     BigBen_instance[hemisphere].BaseView();
-}
-
-void BigBen_Screensaver(bool hemisphere) {
-    BigBen_instance[hemisphere].BaseScreensaverView();
 }
 
 void BigBen_OnButtonPress(bool hemisphere) {

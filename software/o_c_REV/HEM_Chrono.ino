@@ -64,11 +64,6 @@ public:
         // Add other view code as private methods
     }
 
-    void ScreensaverView() {
-        DrawChrono(ChronoTicks,28);
-        if (LapState) DrawChrono(LapTicks,16);
-    }
-
     void OnButtonPress() {
       // If chrono is running, pause or LAP!
       if (ChronoState == HEM_CHRONO_STATE_RUNNING)
@@ -236,10 +231,6 @@ void Chrono_Controller(bool hemisphere, bool forwarding) {
 
 void Chrono_View(bool hemisphere) {
     Chrono_instance[hemisphere].BaseView();
-}
-
-void Chrono_Screensaver(bool hemisphere) {
-    Chrono_instance[hemisphere].BaseScreensaverView();
 }
 
 void Chrono_OnButtonPress(bool hemisphere) {

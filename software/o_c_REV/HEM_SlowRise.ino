@@ -128,10 +128,7 @@ public:
         DrawMenu();
         // Add other view code as private methods
     }
-//*****************************************************
-    void ScreensaverView() {
-      DrawTime((SlowRiseMsDuration - (SlowRiseTicks *6 / 100)),28);
-    }
+
 //*****************************************************
     void OnButtonPress() {
       // If TimeSetState? Set time routine!
@@ -513,10 +510,6 @@ void SlowRise_Controller(bool hemisphere, bool forwarding) {
 
 void SlowRise_View(bool hemisphere) {
     SlowRise_instance[hemisphere].BaseView();
-}
-
-void SlowRise_Screensaver(bool hemisphere) {
-    SlowRise_instance[hemisphere].BaseScreensaverView();
 }
 
 void SlowRise_OnButtonPress(bool hemisphere) {

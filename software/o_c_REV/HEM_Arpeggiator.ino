@@ -177,10 +177,6 @@ public:
         DrawSelector();
     }
 
-	/* Draw the screensaver */
-    void ScreensaverView() {
-        DrawSelector();
-    }
 
 	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
@@ -406,10 +402,6 @@ void Arpeggiator_Controller(bool hemisphere, bool forwarding) {
 
 void Arpeggiator_View(bool hemisphere) {
     Arpeggiator_instance[hemisphere].BaseView();
-}
-
-void Arpeggiator_Screensaver(bool hemisphere) {
-    Arpeggiator_instance[hemisphere].BaseScreensaverView();
 }
 
 void Arpeggiator_OnButtonPress(bool hemisphere) {

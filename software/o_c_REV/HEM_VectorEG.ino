@@ -84,13 +84,17 @@ public:
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,6}, waveform_number[0]);
+        Pack(data, PackLocation {6,6}, waveform_number[1]);
+        Pack(data, PackLocation {12,10}, freq[0] & 0x03ff);
+        Pack(data, PackLocation {22,10}, freq[1] & 0x03ff);
         return data;
     }
     void OnDataReceive(uint32_t data) {
-        // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        waveform_number[0] = Unpack(data, PackLocation {0,6});
+        waveform_number[1] = Unpack(data, PackLocation {6,6});
+        freq[0] = Unpack(data, PackLocation {12,10});
+        freq[1] = Unpack(data, PackLocation {22,10});
     }
 
 protected:
@@ -185,7 +189,6 @@ VectorEG VectorEG_instance[2];
 void VectorEG_Start(bool hemisphere) {VectorEG_instance[hemisphere].BaseStart(hemisphere);}
 void VectorEG_Controller(bool hemisphere, bool forwarding) {VectorEG_instance[hemisphere].BaseController(forwarding);}
 void VectorEG_View(bool hemisphere) {VectorEG_instance[hemisphere].BaseView();}
-void VectorEG_Screensaver(bool hemisphere) {VectorEG_instance[hemisphere].BaseScreensaverView();}
 void VectorEG_OnButtonPress(bool hemisphere) {VectorEG_instance[hemisphere].OnButtonPress();}
 void VectorEG_OnEncoderMove(bool hemisphere, int direction) {VectorEG_instance[hemisphere].OnEncoderMove(direction);}
 void VectorEG_ToggleHelpScreen(bool hemisphere) {VectorEG_instance[hemisphere].HelpScreen();}

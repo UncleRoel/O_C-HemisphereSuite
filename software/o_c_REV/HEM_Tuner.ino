@@ -37,7 +37,13 @@ public:
 
     void Start() {
         A4_Hz = 440;
-        FreqMeasure.begin();
+#ifdef FLIP_180
+        if (hemisphere == 1) {
+#else
+        if (hemisphere == 0) {
+#endif
+            FreqMeasure.begin();
+        }
         AllowRestart();
     }
 
@@ -65,11 +71,6 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        if (hemisphere == 1) DrawTuner();
-        else DrawWarning();
-    }
-
-    void ScreensaverView() {
         if (hemisphere == 1) DrawTuner();
         else DrawWarning();
     }
@@ -216,10 +217,6 @@ void Tuner_Controller(bool hemisphere, bool forwarding) {
 
 void Tuner_View(bool hemisphere) {
     Tuner_instance[hemisphere].BaseView();
-}
-
-void Tuner_Screensaver(bool hemisphere) {
-    Tuner_instance[hemisphere].BaseScreensaverView();
 }
 
 void Tuner_OnButtonPress(bool hemisphere) {

@@ -111,11 +111,6 @@ public:
         DrawSelector();
     }
 
-  /* Draw the screensaver */
-    void ScreensaverView() {
-        DrawSelector();
-    }
-
   /* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
       cursor = 1 - cursor;
@@ -249,10 +244,6 @@ void Gate2Trig_Controller(bool hemisphere, bool forwarding) {
 
 void Gate2Trig_View(bool hemisphere) {
     Gate2Trig_instance[hemisphere].BaseView();
-}
-
-void Gate2Trig_Screensaver(bool hemisphere) {
-    Gate2Trig_instance[hemisphere].BaseScreensaverView();
 }
 
 void Gate2Trig_OnButtonPress(bool hemisphere) {
