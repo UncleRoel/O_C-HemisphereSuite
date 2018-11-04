@@ -69,7 +69,7 @@ public:
 //*****************************************************
     void Controller() {
       // Left trigger? Start!
-      if (Clock(0)) {
+      if (Clock(0,1)) { // Only listen to the physical clock input!
         //StartSlowRise
         if ((SlowRiseState == HEM_SLOWRISE_STATE_ZERO)||(SlowRiseState == HEM_SLOWRISE_STATE_PAUSED)) SlowRiseState = HEM_SLOWRISE_STATE_RUNNING;
         else if (SlowRiseState == HEM_SLOWRISE_STATE_RUNNING) SlowRiseState = HEM_SLOWRISE_STATE_PAUSED;
@@ -257,15 +257,10 @@ public:
       {
         // Change menu
         MenuState += direction;
-        if (MenuState < 0) 
-        {
-          MenuState = 2;
-          if (SlowRiseState == HEM_SLOWRISE_STATE_PAUSED) MenuState = 2;
-          if (SlowRiseState == HEM_SLOWRISE_STATE_RUNNING) MenuState = 1;
-        }
-        if ((SlowRiseState == HEM_SLOWRISE_STATE_RUNNING) && (MenuState == 2)) MenuState = 0;
-        if ((SlowRiseState == HEM_SLOWRISE_STATE_PAUSED) && (MenuState == 3)) MenuState = 0;
-        if (MenuState == 4) MenuState = 0;
+        if (MenuState < 0) MenuState = 0;
+        if ((SlowRiseState == HEM_SLOWRISE_STATE_RUNNING) && (MenuState == 2)) MenuState = 1;
+        if ((SlowRiseState == HEM_SLOWRISE_STATE_PAUSED) && (MenuState == 3)) MenuState = 2;
+        if (MenuState == 4) MenuState = 3;
         // If finished? No use turning! Only reset.
         if (SlowRiseState == HEM_SLOWRISE_STATE_FINISHED) MenuState = HEM_SLOWRISE_MENU_RISEFALLRESET;
       }
