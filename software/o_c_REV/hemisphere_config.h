@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 55
+#define HEMISPHERE_AVAILABLE_APPLETS 56
 
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
@@ -59,6 +59,7 @@
     DECLARE_APPLET( 52, 0x01, VectorEG), \
     DECLARE_APPLET( 49, 0x01, VectorLFO), \
     DECLARE_APPLET( 53, 0x01, VectorMod), \
+    DECLARE_APPLET( 54, 0x01, VectorMorph), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
     DECLARE_APPLET( 51, 0x08, Arpeggiator),\
     DECLARE_APPLET( 50, 0x04, BigBen), \

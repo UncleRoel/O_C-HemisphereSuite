@@ -312,7 +312,13 @@ public:
         outputs[ch] = value + (octave * (12 << 7));
     }
 
-    bool Clock(int ch) {
+    /*
+     * Has the specified Digital input been clocked this cycle?
+     *
+     * If physical is true, then logical clock types (master clock forwarding and metronome) will
+     * not be used.
+     */
+    bool Clock(int ch, bool physical = 0) {
         bool clocked = 0;
         if (hemisphere == 0) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
@@ -322,13 +328,16 @@ public:
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
         }
 
-        if (ch == 0) {
+        if (ch == 0 && !physical) {
             ClockManager *clock_m = clock_m->get();
             if (clock_m->IsRunning()) clocked = clock_m->Tock();
             else if (master_clock_bus) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
         }
 
-        if (clocked) last_clock[ch] = OC::CORE::ticks;
+        if (clocked) {
+        		cycle_ticks[ch] = OC::CORE::ticks - last_clock[ch];
+        		last_clock[ch] = OC::CORE::ticks;
+        }
         return clocked;
     }
 
@@ -357,8 +366,7 @@ public:
     // Buffered I/O functions
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
-    int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
-    int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
+    int ClockCycleTicks(int ch) {return cycle_ticks[ch];}
     bool Changed(int ch) {return changed_cv[ch];}
 
 protected:
@@ -445,7 +453,8 @@ private:
     int io_offset; // Input/Output offset, based on the side
     int inputs[2];
     int outputs[2];
-    int last_clock[2]; // Tick number of the last clock observed by the child class
+    uint32_t last_clock[2]; // Tick number of the last clock observed by the child class
+    uint32_t cycle_ticks[2]; // Number of ticks between last two clocks
     int clock_countdown[2];
     int cursor_countdown;
     int adc_lag_countdown[2]; // Time between a clock event and an ADC read event

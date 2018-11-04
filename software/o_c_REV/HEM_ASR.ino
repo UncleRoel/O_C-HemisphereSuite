@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "HSRingBufferManager.h" // Singleton Lorenz manager
+#include "HSRingBufferManager.h" // Singleton Ring Buffer manager
 
 class ASR : public HemisphereApplet {
 public:
@@ -106,7 +106,7 @@ private:
     int cursor;
     RingBufferManager *buffer_m = buffer_m->get();
     braids::Quantizer quantizer;
-    byte scale;
+    int scale;
     
     void DrawInterface() {
         // Show Link icon if linked with another ASR

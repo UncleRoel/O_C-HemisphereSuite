@@ -34,30 +34,52 @@ public:
             freq[ch] = 200;
             waveform_number[ch] = 0;
             SwitchWaveform(ch, 0);
-            last_clock[ch] = OC::CORE::ticks;
             Out(ch, 0);
         }
     }
 
     void Controller() {
+        // Input 1 is frequency modulation for channel 1
+        if (Changed(0)) {
+            int mod = Proportion(DetentedIn(0), HEMISPHERE_3V_CV, 3000);
+            mod = constrain(mod, -3000, 3000);
+            if (mod + freq[0] > 10) osc[0].SetFrequency(freq[0] + mod);
+        }
+
+        // Input 2 determines signal 1's attenuation on the B/D output mix; at 0V, signal 1
+        // accounts for 50% of the B/D output. At 5V, signal 1 accounts for none of the
+        // B/D output.
+        int atten1 = DetentedIn(1);
+        atten1 = constrain(atten1, 0, HEMISPHERE_MAX_CV);
+
+        int signal = 0; // Declared here because the first channel's output is used in the second channel; see below
         ForEachChannel(ch)
         {
             if (Clock(ch)) {
-                uint32_t ticks = OC::CORE::ticks - last_clock[ch];
+                uint32_t ticks = ClockCycleTicks(ch);
                 int new_freq = 1666666 / ticks;
                 new_freq = constrain(new_freq, 3, 99900);
                 osc[ch].SetFrequency(new_freq);
                 freq[ch] = new_freq;
                 osc[ch].Reset();
-                last_clock[ch] = OC::CORE::ticks;
             }
 
-            if (Changed(ch)) {
-                int mod = Proportion(DetentedIn(ch), HEMISPHERE_3V_CV, freq[ch]);
-                if (mod + freq[ch] > 3) osc[ch].SetFrequency(freq[ch] + mod);
-            }
+            if (ch == 0) {
+                // Out A is always just the first oscillator at full amplitude
+                signal = osc[ch].Next();
+            } else {
+                // Out B can have channel 1 blended into it, depending on the value of atten1. At a value
+                // of 0, Out B is a 50/50 mix of channels 1 and 2. At a value of 5V, channel 1 is absent
+                // from Out B.
+                signal = Proportion(HEMISPHERE_MAX_CV - atten1, HEMISPHERE_MAX_CV, signal); // signal from channel 1's iteration
+                signal += osc[ch].Next();
 
-            Out(ch, osc[ch].Next());
+                // Proportionally blend the signal, depending on attenuation. If atten1 is 0, then this
+                // effectively divides the signal by 2. If atten1 is 5V, then the channel 2 signal will be
+                // output at full amplitude.
+                signal = Proportion(HEMISPHERE_MAX_CV, HEMISPHERE_MAX_CV + (HEMISPHERE_MAX_CV - atten1), signal);
+            }
+            Out(ch, signal);
         }
     }
 
@@ -78,6 +100,8 @@ public:
         if (c == 1) { // Waveform
             waveform_number[ch] = WaveformManager::GetNextWaveform(waveform_number[ch], direction);
             SwitchWaveform(ch, waveform_number[ch]);
+            // Reset both waveform to provide a sync mechanism
+            ForEachChannel(ch) osc[ch].Reset();
         }
         if (c == 0) { // Frequency
             if (freq[ch] > 100000) direction *= 10000;
@@ -108,15 +132,14 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Sync";
-        help[HEMISPHERE_HELP_CVS]      = "1,2=Freq. Mod";
-        help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
-        help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
+        help[HEMISPHERE_HELP_CVS]      = "1=Freq1 2=Atten1@B";
+        help[HEMISPHERE_HELP_OUTS]     = "Out A=1, B=2+1";
+        help[HEMISPHERE_HELP_ENCODER]  = "Freq./Waveform";
         //                               "------------------" <-- Size Guide
     }
     
 private:
     int cursor; // 0=Freq A; 1=Waveform A; 2=Freq B; 3=Waveform B
-    uint32_t last_clock[2];
     VectorOscillator osc[2];
 
     // Settings
@@ -155,17 +178,17 @@ private:
         {
             seg = osc[ch].GetSegment(i);
             byte y = 63 - Proportion(seg.level, 255, 38);
-            byte seg_x = Proportion(seg.time, total_time, 64);
+            byte seg_x = Proportion(seg.time, total_time, 62);
             byte x = prev_x + seg_x;
-            x = constrain(x, 0, 63);
-            y = constrain(y, 25, 63);
+            x = constrain(x, 0, 62);
+            y = constrain(y, 25, 62);
             gfxLine(prev_x, prev_y, x, y);
             prev_x = x;
             prev_y = y;
         }
 
         // Zero line
-        gfxDottedLine(0, 43, 63, 43, 8);
+        gfxDottedLine(0, 44, 63, 44, 8);
     }
 
     void SwitchWaveform(byte ch, int waveform) {
