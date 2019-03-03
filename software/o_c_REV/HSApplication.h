@@ -39,6 +39,13 @@ typedef int32_t simfloat;
 #define HSAPPLICATION_CURSOR_TICKS 12000
 #define HSAPPLICATION_5V 7680
 #define HSAPPLICATION_3V 4608
+#define HSAPPLICATION_CHANGE_THRESHOLD 32
+
+#ifdef BUCHLA_4U
+#define PULSE_VOLTAGE 8
+#else
+#define PULSE_VOLTAGE 5
+#endif
 
 class HSApplication {
 public:
@@ -52,7 +59,7 @@ public:
         {
             // Set ADC input values
             inputs[ch] = OC::ADC::raw_pitch_value((ADC_CHANNEL)ch);
-            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+            if (abs(inputs[ch] - last_cv[ch]) > HSAPPLICATION_CHANGE_THRESHOLD) {
                 changed_cv[ch] = 1;
                 last_cv[ch] = inputs[ch];
             } else changed_cv[ch] = 0;
@@ -121,7 +128,7 @@ public:
     }
 
     void GateOut(int ch, bool high) {
-        Out(ch, 0, (high ? 5 : 0));
+        Out(ch, 0, (high ? PULSE_VOLTAGE : 0));
     }
 
     bool Clock(int ch) {
@@ -139,7 +146,7 @@ public:
 
     void ClockOut(int ch, int ticks = 100) {
         clock_countdown[ch] = ticks;
-        Out(ch, 0, 5);
+        Out(ch, 0, PULSE_VOLTAGE);
     }
 
     // Buffered I/O functions for use in Views
@@ -214,7 +221,7 @@ public:
         graphics.drawLine(x, y, x2, y2);
     }
 
-    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p = 2) {
 #ifdef HS_GFX_MOD
         graphics.drawLine(x, y, x2, y2, p);
 #else

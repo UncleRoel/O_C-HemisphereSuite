@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 56
+#define HEMISPHERE_AVAILABLE_APPLETS 57
 
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
@@ -25,7 +25,8 @@
     DECLARE_APPLET(  6, 0x04, ClockDivider), \
     DECLARE_APPLET( 28, 0x04, ClockSkip), \
     DECLARE_APPLET( 30, 0x10, Compare), \
-    DECLARE_APPLET( 24, 0x02, CVRec), \
+    DECLARE_APPLET( 24, 0x02, CVRecV2), \
+    DECLARE_APPLET( 55, 0x80, DrCrusher), \
     DECLARE_APPLET(  9, 0x08, DualQuant), \
     DECLARE_APPLET( 45, 0x02, EnigmaJr), \
     DECLARE_APPLET( 42, 0x11, EnvFollow), \

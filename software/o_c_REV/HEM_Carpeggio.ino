@@ -62,6 +62,10 @@ public:
             replay = 0;
         }
 
+        // Modulation output
+        int xy = (In(0) * In(1)) / HEMISPHERE_MAX_CV;
+        Out(1, xy);
+
         // Handle imprint confirmation animation
         if (--confirm_animation_countdown < 0) {
             confirm_animation_position--;
@@ -109,7 +113,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS]      = "1=X 2=Y";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Quant";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Quant B=(XY)/5V";
         help[HEMISPHERE_HELP_ENCODER]  = "Note/Chord/Trnspos";
         //                               "------------------" <-- Size Guide
     }
@@ -133,12 +137,10 @@ private:
 
     void DrawSelector() {
         // Chord selector
-        gfxPrint(1, 15, Arp_Chords[chord].chord_name);
+        gfxPrint(0, 15, Arp_Chords[chord].chord_name);
         if (cursor == 1) {
-            gfxCursor(1, 23, 62);
-            if (chord == sel_chord) {
-                gfxBitmap(55, 13, 8, CHECK_ICON);
-            }
+            gfxCursor(1, 23, 53);
+            gfxBitmap(55, 14, 8, chord == sel_chord ? CHECK_ON_ICON : CHECK_OFF_ICON);
         }
 
         // Transpose editor

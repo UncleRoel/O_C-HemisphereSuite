@@ -97,13 +97,10 @@ public:
 
         // Handle other messages
         if (function != HEM_MIDI_VEL_IN) {
-            int this_cv = In(1);
-            if (cv_has_changed(this_cv, last_cv)) {
-                last_cv = this_cv;
-
+            if (Changed(1)) {
                 // Modulation wheel
                 if (function == HEM_MIDI_CC_IN) {
-                    int value = ProportionCV(this_cv, 127);
+                    int value = ProportionCV(In(1), 127);
                     usbMIDI.sendControlChange(1, value, channel + 1);
                     usbMIDI.send_now();
                     UpdateLog(HEM_MIDI_CC, value, 0);
@@ -112,7 +109,7 @@ public:
 
                 // Aftertouch
                 if (function == HEM_MIDI_AT_IN) {
-                    int value = ProportionCV(this_cv, 127);
+                    int value = ProportionCV(In(1), 127);
                     usbMIDI.sendAfterTouch(value, channel + 1);
                     usbMIDI.send_now();
                     UpdateLog(HEM_MIDI_AFTERTOUCH, value, 0);
@@ -121,7 +118,7 @@ public:
 
                 // Pitch Bend
                 if (function == HEM_MIDI_PB_IN) {
-                    uint16_t bend = Proportion(this_cv + HEMISPHERE_3V_CV, HEMISPHERE_3V_CV * 2, 16383);
+                    uint16_t bend = Proportion(In(1) + HEMISPHERE_3V_CV, HEMISPHERE_3V_CV * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, channel + 1);
                     usbMIDI.send_now();
@@ -149,6 +146,7 @@ public:
         if (cursor == 1) transpose = constrain(transpose += direction, -24, 24);
         if (cursor == 2) function = constrain(function += direction, 0, 3);
         if (cursor == 3) legato = direction > 0 ? 1 : 0;
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
@@ -191,7 +189,6 @@ private:
     bool legato_on; // The note handler may currently respond to legato note changes
     int last_tick; // Most recent MIDI message sent
     int adc_lag_countdown;
-    int last_cv; // For checking for changes
     const char* fn_name[4];
 
     // Logging
@@ -231,11 +228,10 @@ private:
 
         // Legato
         gfxPrint(1, 45, "Legato ");
-        gfxPrint(legato ? "On" : "Off");
+        if (cursor != 3 || CursorBlink()) gfxIcon(54, 45, legato ? CHECK_ON_ICON : CHECK_OFF_ICON);
 
         // Cursor
         if (cursor < 3) gfxCursor(24, 23 + (cursor * 10), 39);
-        else gfxCursor(44, 53, 19);
 
         // Last note log
         if (last_velocity) {
@@ -253,11 +249,6 @@ private:
                 log_entry(15 + (i * 8), i);
             }
         }
-    }
-
-    bool cv_has_changed(int this_cv, int last_cv) {
-        int diff = this_cv - last_cv;
-        return (diff > 50 || diff < -50) ? 1 : 0;
     }
 
     void log_entry(int y, int index) {

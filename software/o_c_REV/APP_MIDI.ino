@@ -135,7 +135,7 @@ struct CaptainMIDILog {
     void DrawAt(int y) {
         if (message == 5) {
             int app_code = static_cast<char>(data1);
-            if (app_code >0) {
+            if (app_code > 0) {
                 graphics.setPrintPos(1, y);
                 graphics.print("SysEx: ");
                 if (app_code == 'M') graphics.print("Captain MIDI");
@@ -144,6 +144,9 @@ struct CaptainMIDILog {
                 if (app_code == 'E') graphics.print("Scale Ed");
                 if (app_code == 'T') graphics.print("Enigma");
                 if (app_code == 'W') graphics.print("Waveform Ed");
+                if (app_code == '_') graphics.print("O_C EEPROM");
+                if (app_code == 'B') graphics.print("Backup");
+                if (app_code == 'N') graphics.print("Neural Net");
             }
         } else {
             graphics.setPrintPos(1, y);
@@ -384,7 +387,7 @@ private:
     bool display; // 0=Setup Edit 1=Log
     bool copy_mode; // Copy mode on/off
     int copy_setup_source; // Which setup is being copied?
-    int copy_setup_target; // Which setup is the
+    int copy_setup_target; // Which setup is being copied to?
 
     CaptainMIDILog log[MIDI_LOG_MAX_SIZE];
     int log_index; // Index of log for writing
@@ -400,18 +403,18 @@ private:
     int note_out[4]; // Most recent note from this input channel
     int last_channel[4]; // Keep track of the actual send channel, in case it's changed while the note is on
     int legato_on[4]; // The note handler may currently respond to legato note changes
-    int last_cv[4]; // To determine whether a new CV value needs to be handled for MIDI controllers
     uint16_t indicator_out[4]; // A MIDI indicator will display next to MIDI Out assignment
 
     void DrawSetupScreens() {
         // Create the header, showing the current Setup and Screen name
-        gfxHeader("Setup ");
-        graphics.print(get_setup_number() + 1);
-        if (screen == 0) graphics.print("   MIDI Assign");
-        if (screen == 1) graphics.print("  MIDI Channel");
-        if (screen == 2) graphics.print("     Transpose");
-        if (screen == 3) graphics.print("     Range Low");
-        if (screen == 4) graphics.print("    Range High");
+        gfxHeader("");
+        if (screen == 0) graphics.print("MIDI Assign");
+        if (screen == 1) graphics.print("MIDI Channel");
+        if (screen == 2) graphics.print("Transpose");
+        if (screen == 3) graphics.print("Range Low");
+        if (screen == 4) graphics.print("Range High");
+        gfxPrint(128 - 42, 1, "Setup ");
+        gfxPrint(get_setup_number() + 1);
 
         // Iterate through the current range of settings
         menu::SettingsList<menu::kScreenLines, 0, menu::kDefaultValueX - 1> settings_list(cursor);
@@ -583,10 +586,7 @@ private:
             }
 
             // Handle other messages
-            int this_cv = In(ch);
-            if (cv_has_changed(this_cv, last_cv[ch])) {
-                last_cv[ch] = this_cv;
-
+            if (Changed(ch)) {
                 // Modulation wheel
                 if (out_fn == MIDI_OUT_MOD || out_fn >= MIDI_OUT_EXPRESSION) {
                     int cc = 1; // Modulation wheel
@@ -596,7 +596,7 @@ private:
                     if (out_fn == MIDI_OUT_BREATH) cc = 2;
                     if (out_fn == MIDI_OUT_Y_AXIS) cc = 74;
 
-                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
+                    int value = Proportion(In(ch), HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     if (cc == 64) value = (value >= 60) ? 127 : 0; // On or off for sustain pedal
 
@@ -607,7 +607,7 @@ private:
 
                 // Aftertouch
                 if (out_fn == MIDI_OUT_AFTERTOUCH) {
-                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
+                    int value = Proportion(In(ch), HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     usbMIDI.sendAfterTouch(value, out_ch);
                     UpdateLog(0, ch, 3, out_ch, 0, value);
@@ -616,7 +616,7 @@ private:
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    int16_t bend = Proportion(this_cv + HSAPPLICATION_3V, HSAPPLICATION_3V * 2, 16383);
+                    int16_t bend = Proportion(In(ch) + HSAPPLICATION_3V, HSAPPLICATION_3V * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
                     UpdateLog(0, ch, 4, out_ch, 0, bend - 8192);
@@ -811,11 +811,6 @@ private:
         return (note >= range_low && note <= range_high);
     }
 
-    bool cv_has_changed(int this_cv, int last_cv) {
-        int diff = this_cv - last_cv;
-        return (diff > 50 || diff < -50) ? 1 : 0;
-    }
-
     void UpdateLog(bool midi_in, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
         // Don't log SysEx unless the user is on the log display screen
         if (message == 5 && display == 0) return;
@@ -911,3 +906,5 @@ void MIDI_handleEncoderEvent(const UI::Event &event) {
         captain_midi_instance.SwitchScreenOrLogView(event.value);
     }
 }
+
+

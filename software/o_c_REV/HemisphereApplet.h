@@ -31,7 +31,14 @@
 #define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
-#define HEMISPHERE_ADC_LAG 33;
+#define HEMISPHERE_ADC_LAG 33
+#define HEMISPHERE_CHANGE_THRESHOLD 32
+
+#ifdef BUCHLA_4U
+#define PULSE_VOLTAGE 8
+#else
+#define PULSE_VOLTAGE 5
+#endif
 
 // Codes for help system sections
 #define HEMISPHERE_HELP_DIGITALS 0
@@ -81,7 +88,12 @@ public:
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
 
         // Shutdown FTM capture on Digital 4, used by Tuner
-        if (hemisphere == 1) {
+#ifdef FLIP_180
+        if (hemisphere == 0)
+#else
+        if (hemisphere == 1)
+#endif
+        {
             FreqMeasure.end();
             OC::DigitalInputs::reInit();
         }
@@ -101,7 +113,7 @@ public:
 
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
-            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+            if (abs(inputs[ch] - last_cv[ch]) > HEMISPHERE_CHANGE_THRESHOLD) {
                 changed_cv[ch] = 1;
                 last_cv[ch] = inputs[ch];
             } else changed_cv[ch] = 0;
@@ -248,7 +260,7 @@ public:
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, dotted ? 2 : 1);
     }
 
-    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p = 2) {
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, p);
     }
 
@@ -343,7 +355,7 @@ public:
 
     void ClockOut(int ch, int ticks = HEMISPHERE_CLOCK_TICKS) {
         clock_countdown[ch] = ticks;
-        Out(ch, 0, 5);
+        Out(ch, 0, PULSE_VOLTAGE);
     }
 
     bool Gate(int ch) {
@@ -360,7 +372,7 @@ public:
     }
 
     void GateOut(int ch, bool high) {
-        Out(ch, 0, (high ? 5 : 0));
+        Out(ch, 0, (high ? PULSE_VOLTAGE : 0));
     }
 
     // Buffered I/O functions

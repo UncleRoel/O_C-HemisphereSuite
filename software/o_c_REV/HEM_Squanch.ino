@@ -72,7 +72,7 @@ public:
     void OnEncoderMove(int direction) {
         if (cursor == 2) { // Scale selection
             scale += direction;
-            if (scale == OC::Scales::NUM_SCALES) scale = 0;
+            if (scale >= OC::Scales::NUM_SCALES) scale = 0;
             if (scale < 0) scale = OC::Scales::NUM_SCALES - 1;
             quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
             continuous = 1; // Re-enable continuous mode when scale is changed
@@ -93,6 +93,7 @@ public:
         scale = Unpack(data, PackLocation {0,8});
         shift[0] = Unpack(data, PackLocation {8,8}) - 48;
         shift[1] = Unpack(data, PackLocation {16,8}) - 48;
+        quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
     }
 
 protected:

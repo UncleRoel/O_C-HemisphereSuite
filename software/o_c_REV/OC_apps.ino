@@ -24,26 +24,27 @@
 #include "OC_digital_inputs.h"
 #include "OC_autotune.h"
 
-#define DECLARE_APP(a, b, name, prefix, isr) \
+#define DECLARE_APP(a, b, name, prefix) \
 { TWOCC<a,b>::value, name, \
   prefix ## _init, prefix ## _storageSize, prefix ## _save, prefix ## _restore, \
   prefix ## _handleAppEvent, \
   prefix ## _loop, prefix ## _menu, prefix ## _screensaver, \
   prefix ## _handleButtonEvent, \
   prefix ## _handleEncoderEvent, \
-  isr \
+  prefix ## _isr \
 }
 
 OC::App available_apps[] = {
-  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
-  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
-  DECLARE_APP('E','N', "Enigma", EnigmaTMWS, EnigmaTMWS_isr),
-  DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
-  DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
-  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('W','A', "Waveform Editor", WaveformEditor, WaveformEditor_isr),
-  DECLARE_APP('S','E', "Setup / About", Settings, Settings_isr),
+  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE),
+  DECLARE_APP('M','I', "Captain MIDI", MIDI),
+  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline),
+  DECLARE_APP('E','N', "Enigma", EnigmaTMWS),
+  DECLARE_APP('N','N', "Neural Net", NeuralNetwork),
+  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR),
+  DECLARE_APP('W','A', "Waveform Editor", WaveformEditor),
+  DECLARE_APP('P','O', "Pong", PONGGAME),
+  DECLARE_APP('B','R', "Backup / Restore", Backup),
+  DECLARE_APP('S','E', "Setup / About", Settings),
 };
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
@@ -301,7 +302,7 @@ void draw_app_menu(const menu::ScreenCursor<5> &cursor) {
   GRAPHICS_BEGIN_FRAME(true);
 
   menu::SettingsListItem item;
-  item.x = menu::kIndentDx;
+  item.x = menu::kIndentDx + 8;
   item.y = (64 - (5 * menu::kMenuLineH)) / 2;
 
   for (int current = cursor.first_visible();
@@ -311,8 +312,10 @@ void draw_app_menu(const menu::ScreenCursor<5> &cursor) {
     item.SetPrintPos();
     graphics.movePrintPos(weegfx::Graphics::kFixedFontW, 0);
     graphics.print(available_apps[current].name);
-    if (global_settings.current_app_id == available_apps[current].id)
-       graphics.drawBitmap8(item.x + 2, item.y + 1, 4, bitmap_indicator_4x8);
+//    if (global_settings.current_app_id == available_apps[current].id)
+//       graphics.drawBitmap8(item.x + 2, item.y + 1, 4, bitmap_indicator_4x8);
+    graphics.drawBitmap8(0, item.y + 1, 8,
+        global_settings.current_app_id == available_apps[current].id ? CHECK_ON_ICON : CHECK_OFF_ICON);
     item.DrawCustom();
   }
 
@@ -322,7 +325,9 @@ void draw_app_menu(const menu::ScreenCursor<5> &cursor) {
 void draw_save_message(uint8_t c) {
   GRAPHICS_BEGIN_FRAME(true);
   uint8_t _size = c % 120;
-  graphics.drawRect(63 - (_size >> 1), 31 - (_size >> 2), _size, _size >> 1);  
+  graphics.setPrintPos(37, 18);
+  graphics.print("Saving...");
+  graphics.drawRect(0, 28, _size, 8);
   GRAPHICS_END_FRAME();
 }
 
